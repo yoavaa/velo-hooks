@@ -14,6 +14,10 @@ export class Text {
   html: string
 }
 
+export class Box {
+  backgroundColor: string
+}
+
 export function make_$w<T>(comps: T): $W<T> {
   let $w: $W<T> = function(id) {
     return comps[id.substring(1)]
