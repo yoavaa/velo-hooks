@@ -20,4 +20,14 @@ describe("$w stab", () => {
   it('non existing compoennt should not be', () => {
     expect($w('#nonExisting')).not.toBeDefined()
   })
+
+  describe('button', () => {
+    it('should call onClick on a click', () => {
+      let fn = jest.fn();
+      $w('#up').onClick = fn;
+      $w('#up').click();
+
+      expect(fn).toHaveBeenCalled()
+    })
+  })
 });
