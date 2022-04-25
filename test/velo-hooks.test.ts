@@ -92,5 +92,21 @@ describe("velo hooks", () => {
       testRefs.up.click();
       expect($w('#text').text).toBe('13')
     })
+
+    it('should update prop using memo from multiple event invocations', () => {
+      let testRefs = bind($w, refs => {
+        let [state, setState] = createState(12);
+        let label = createMemo(() => `${state()}`)
+        refs.text.text = label;
+        refs.up.onClick = () => setState(_ => _ + 1);
+        refs.down.onClick = () => setState(_ => _ - 1);
+      })
+
+      testRefs.up.click();
+      testRefs.up.click();
+      testRefs.up.click();
+      testRefs.down.click();
+      expect($w('#text').text).toBe('14')
+    })
   })
 })

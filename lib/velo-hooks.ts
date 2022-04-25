@@ -8,6 +8,8 @@ export type Refs<T> = {
   [K in keyof T]: RefComponent<T[K]>
 }
 
+type EffectCleanup = () => void
+
 export interface $W<T> {
   // @ts-ignore
   <K extends keyof T, V extends T[K]>(id: `#${K}`): V
@@ -17,14 +19,15 @@ export interface $W<T> {
 
 let current: Reactive;
 let current$w: $W<any>
+
 export function useReactive(): Reactive {
   return current;
 }
+
 export function createState<T>(value: ValueOrGetter<T>): [get: Getter<T>, set: Setter<T>] {
   return useReactive().createState(value);
 }
 
-type EffectCleanup = () => void
 export function createEffect(effect: () => void | EffectCleanup) {
   let cleanup = undefined;
 
@@ -59,6 +62,7 @@ export function with$w<T>($w: $W<T>, act: () => void) {
   }
 
 }
+
 export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): Refs<T> {
   current = current || new Reactive();
   return useReactive().record(() => {
