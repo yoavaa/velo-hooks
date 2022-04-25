@@ -18,6 +18,7 @@ describe("$w stab", () => {
   })
 
   it('non existing compoennt should not be', () => {
+    // @ts-ignore
     expect($w('#nonExisting')).not.toBeDefined()
   })
 

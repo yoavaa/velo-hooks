@@ -6,6 +6,7 @@ export type Next<T> = (t: T) => T
 export type Setter<T> = (t: T | Next<T>) => T
 export type Getter<T> = () => T
 export type ValueOrGetter<T> = T | Getter<T>
+export const GetterMark = Symbol();
 
 export class Reactive {
 
@@ -74,6 +75,7 @@ export class Reactive {
         else
             setter(value);
 
+        getter[GetterMark] = true;
         return [getter, setter]
     }
 

@@ -1,3 +1,5 @@
+import {$W, bind, Refs} from '../lib/velo-hooks'
+
 export class Button {
   label: string
   onClick: (event: any) => void
@@ -12,17 +14,15 @@ export class Text {
   html: string
 }
 
-export interface $W<T> {
-  <K extends keyof T, V extends T[K]>(id: `#${K}`): V
-  onReady: (fn: () => Promise<void>) => Promise<void>
-}
-
 export function make_$w<T>(comps: T): $W<T> {
   let $w: $W<T> = function(id) {
     return comps[id.substring(1)]
   } as $W<T>;
   $w.onReady = function(fn: () => Promise<void>) {
     return fn();
+  }
+  $w.bind = function(fn: (refs: Refs<T>) => void) {
+    bind($w, fn);
   }
   return $w;
 }
@@ -34,4 +34,4 @@ let $w = make_$w({
   text: new Text()
 })
 
-$w('#up').label = 12;
+$w('#up').label = '12';
