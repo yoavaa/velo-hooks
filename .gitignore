@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+*.iml
+*.lock
+package-lock.json
+/packages/compiler/lib/parse-expressions.js
+lerna-debug.log
+examples/**/*.d.ts
+**/coverage/
