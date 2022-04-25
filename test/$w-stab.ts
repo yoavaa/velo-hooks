@@ -1,4 +1,4 @@
-class Button {
+export class Button {
   label: string
   onClick: (event: any) => void
   click() {
@@ -7,7 +7,7 @@ class Button {
   }
 }
 
-class Text {
+export class Text {
   text: string
   html: string
 }
