@@ -1,4 +1,4 @@
-import {describe, expect, it, jest, beforeEach} from '@jest/globals'
+import {beforeEach, describe, expect, it} from '@jest/globals'
 import {Box, Button, make_$w, Text} from "./$w-stab";
 import {$W, bind, createMemo, createState, Refs, useReactive} from "../lib/velo-hooks";
 
@@ -34,7 +34,7 @@ describe("velo hooks", () => {
     describe('state and props', () => {
       it('should bind property to state', () => {
         bind($w, refs => {
-          let [state, setState] = createState('some text');
+          let [state, ] = createState('some text');
           refs.text.text = state;
         })
         expect($w('#text').text).toBe('some text')
@@ -80,40 +80,25 @@ describe("velo hooks", () => {
     })
 
     describe('events, state and memo', () => {
-      it('should bind memo to property', () => {
-        let testRefs = bind($w, refs => {
+      let testRefs;
+      beforeEach(() => {
+        testRefs = bind($w, refs => {
           let [state, setState] = createState(12);
-          let label = createMemo(() => `${state()}`)
-          refs.text.text = label;
+          refs.text.text = createMemo(() => `${state()}`);
           refs.up.onClick = () => setState(_ => _ + 1);
           refs.down.onClick = () => setState(_ => _ - 1);
         })
-
+      })
+      it('should bind memo to property', () => {
         expect($w('#text').text).toBe('12')
       })
 
       it('should update prop using memo from event', () => {
-        let testRefs = bind($w, refs => {
-          let [state, setState] = createState(12);
-          let label = createMemo(() => `${state()}`)
-          refs.text.text = label;
-          refs.up.onClick = () => setState(_ => _ + 1);
-          refs.down.onClick = () => setState(_ => _ - 1);
-        })
-
         testRefs.up.click();
         expect($w('#text').text).toBe('13')
       })
 
       it('should update prop using memo from multiple event invocations', () => {
-        let testRefs = bind($w, refs => {
-          let [state, setState] = createState(12);
-          let label = createMemo(() => `${state()}`)
-          refs.text.text = label;
-          refs.up.onClick = () => setState(_ => _ + 1);
-          refs.down.onClick = () => setState(_ => _ - 1);
-        })
-
         testRefs.up.click();
         testRefs.up.click();
         testRefs.up.click();
@@ -165,11 +150,34 @@ describe("velo hooks", () => {
       expect($w('#box1').backgroundColor).toBe('blue');
     })
 
-    it('should render initial value', () => {
+    it('should render incremented value', () => {
       testRefs.increment.click();
 
       expect($w('#counter').text).toBe('35');
       expect($w('#counterExtraView').text).toBe('35');
+      expect($w('#box1').backgroundColor).toBe('red');
+    })
+
+    it('should render decremented value 1', () => {
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('25');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('20');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('15');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('10');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('5');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('4');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('3');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('2');
+      testRefs.decrement.click();
+      expect($w('#counter').text).toBe('1');
+      expect($w('#counterExtraView').text).toBe('1');
       expect($w('#box1').backgroundColor).toBe('red');
     })
   })
