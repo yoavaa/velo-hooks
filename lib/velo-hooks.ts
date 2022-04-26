@@ -1,4 +1,4 @@
-import {Getter, GetterMark, Reactive, Setter, ValueOrGetter} from "./reactive";
+import {Getter, GetterMark, Reactive, Setter, ValueOrGetter} from "jay-reactive";
 
 export type RefComponent<C> = {
   [K in keyof C]: C[K] extends Function? C[K] : Getter<C[K]> | C[K]

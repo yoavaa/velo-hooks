@@ -1,4 +1,4 @@
-import {$W, bind, Refs} from '../lib/velo-hooks'
+import {$W, bind, Refs} from '../lib'
 
 export class Button {
   label: string
