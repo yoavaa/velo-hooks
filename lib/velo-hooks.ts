@@ -18,7 +18,6 @@ export interface $W<T> {
 }
 
 let current: Reactive;
-let current$w: $W<any>
 
 export function useReactive(): Reactive {
   return current;
@@ -52,17 +51,6 @@ export function createMemo<T>(computation: (prev: T) => T, initialValue?: T): Ge
   return value
 }
 
-export function with$w<T>($w: $W<T>, act: () => void) {
-  current$w = $w;
-  try {
-    act();
-  }
-  finally {
-    current$w = undefined;
-  }
-
-}
-
 export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): Refs<T> {
   current = current || new Reactive();
   return useReactive().record(() => {
@@ -94,7 +82,7 @@ function componentProxy<T extends object>(comp: T): RefComponent<T> {
     get: function(obj, prop) {
       let rawValue = obj[prop];
       if (rawValue instanceof Function)
-        return rawValue;
+        return (...args) => (rawValue as Function).apply(obj, args);
       else
         return () => rawValue;
     },

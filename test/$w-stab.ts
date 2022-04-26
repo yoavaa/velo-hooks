@@ -1,6 +1,34 @@
 import {$W, bind, Refs} from '../lib'
+import {ShowHideMixin} from "../lib/visiblity-hooks";
 
-export class Button {
+export class BaseElement implements ShowHideMixin {
+  private isHidden: boolean = false;
+  private isCollapsed: boolean = false;
+  private animations: string[] = []
+
+  show(effectName?: string) {
+    this.isHidden = false
+    this.animations.push('show ' + effectName);
+  }
+  hide(effectName?: string) {
+    this.isHidden = true
+    this.animations.push('hide ' + effectName);
+  }
+  get hidden() {return this.isHidden}
+
+  collapse(effectName?: string) {
+    this.isCollapsed = false
+    this.animations.push('collapse ' + effectName);
+  }
+  expand(effectName?: string) {
+    this.isCollapsed = true
+    this.animations.push('expand ' + effectName);
+  }
+  get collapsed() {return this.isCollapsed}
+  get allAnimations() {return this.animations};
+}
+
+export class Button extends BaseElement {
   label: string
   onClick: (event: any) => void
   click() {
@@ -9,12 +37,12 @@ export class Button {
   }
 }
 
-export class Text {
+export class Text extends BaseElement {
   text: string
   html: string
 }
 
-export class Box {
+export class Box extends BaseElement {
   backgroundColor: string
 }
 
