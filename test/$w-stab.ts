@@ -50,8 +50,10 @@ export interface HasId {
 
 export type OnItemReady<Item extends HasId, Item$W> = ($item: $W<Item$W>, itemData: Item, index: number) => void;
 export type OnItemRemoved<Item extends HasId> = (itemData: Item) => void
+export type ForItemCallback<Item extends HasId, Item$W> = ($item: $W<Item$W>, itemData: Item, index: number) => void;
 export class Repeater<Item extends HasId, Comps> extends BaseElement {
   private _data: Array<Item> = []
+  private item$ws: Map<string, [$W<Comps>, Item, number]> = new Map();
   constructor(private makeItemComponents: () => Comps) {
     super();
   }
@@ -61,18 +63,27 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement {
     let orig = new Set(this._data.map(_ => _._id))
     let update = new Set(val.map(_ => _._id))
 
-    if (this.onItemReady)
-      for (let i = 0; i < val.length; i++)
-        if (!orig.has(val[i]._id))
-          this.onItemReady(make_$w(this.makeItemComponents()), val[i], i) //todo create item $w
+    for (let i = 0; i < val.length; i++)
+      if (!orig.has(val[i]._id)) {
+        let $w = make_$w(this.makeItemComponents());
+        this.item$ws.set(val[i]._id, [$w, val[i], i]);
+        if (this.onItemReady)
+          this.onItemReady($w, val[i], i);
+      }
 
-    if (this.onItemRemoved)
-      for (let i = 0; i < this._data.length; i++)
-        if (!update.has(this._data[i]._id))
+    for (let i = 0; i < this._data.length; i++)
+      if (!update.has(this._data[i]._id)) {
+        this.item$ws.delete(this._data[i]._id);
+        if (this.onItemRemoved)
           this.onItemRemoved(this._data[i]);
+      }
 
     this._data = val
   };
+
+  forItems(itemIds: Array<string>, callback: ForItemCallback<Item, Comps>): void {
+    itemIds.forEach(id => callback(...this.item$ws.get(id)))
+  }
 
   onItemReady: OnItemReady<Item, Comps>
   onItemRemoved: OnItemRemoved<Item>

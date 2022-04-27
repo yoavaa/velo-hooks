@@ -1,6 +1,6 @@
 import {describe, expect, it, jest} from '@jest/globals'
 import {Button, make_$w, Repeater, Text} from "./$w-stab";
-import {$W} from '../lib'
+import {$W} from "../lib";
 
 
 describe("$w stab", () => {
@@ -49,7 +49,7 @@ describe("$w stab", () => {
     const two = {_id: "2", title: "two", description: "the second"}
     const three = {_id: "3", title: "three", description: "the best"}
 
-    it('given data, create the items', () => {
+    it('given data, create the items and call onItemReady', () => {
       let fn = jest.fn();
       $w('#items').onItemReady = fn;
       $w('#items').data = [one, two];
@@ -59,7 +59,29 @@ describe("$w stab", () => {
       expect(fn.mock.calls[0][2]).toBe(0);
       expect(fn.mock.calls[1][1]).toBe(two);
       expect(fn.mock.calls[1][2]).toBe(1);
+    })
 
+    it('given data, create the items $w', () => {
+      $w('#items').onItemReady = ($Item, itemData, index) => {
+        expect($Item('#title')).toBeDefined();
+        expect($Item('#description')).toBeDefined();
+        expect($Item('#remove')).toBeDefined();
+        expect(itemData).toBe(two);
+      };
+      $w('#items').data = [two];
+    })
+
+    it('given data, support forItems', () => {
+      let fn = jest.fn();
+      $w('#items').onItemReady = ($Item, itemData) => {
+        $Item('#title').text = itemData.title;
+      };
+      $w('#items').data = [one, two];
+
+      $w('#items').forItems([one._id], ($Item, itemData, index) => {
+        expect(itemData).toBe(one);
+        expect($Item('#title').text).toBe(one.title);
+      })
     })
   })
 });
