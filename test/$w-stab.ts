@@ -1,28 +1,25 @@
-import {$W, bind, Refs} from '../lib'
-import {ShowHideMixin} from "../lib/visiblity-hooks";
+import {$W, bind, Refs, ShowHideMixin} from '../lib'
 
 export class BaseElement implements ShowHideMixin {
   private isHidden: boolean = false;
   private isCollapsed: boolean = false;
   private animations: string[] = []
 
-  show(effectName?: string) {
+  show(effectName?: string, options?: any) {
     this.isHidden = false
     this.animations.push('show ' + effectName);
   }
-  hide(effectName?: string) {
+  hide(effectName?: string, options?: any) {
     this.isHidden = true
     this.animations.push('hide ' + effectName);
   }
   get hidden() {return this.isHidden}
 
-  collapse(effectName?: string) {
+  collapse() {
     this.isCollapsed = false
-    this.animations.push('collapse ' + effectName);
   }
-  expand(effectName?: string) {
+  expand() {
     this.isCollapsed = true
-    this.animations.push('expand ' + effectName);
   }
   get collapsed() {return this.isCollapsed}
   get allAnimations() {return this.animations};
@@ -44,6 +41,41 @@ export class Text extends BaseElement {
 
 export class Box extends BaseElement {
   backgroundColor: string
+}
+
+export interface HasId {
+  _id: string
+  [key: string]: any
+}
+
+export type OnItemReady<Item extends HasId, Item$W> = ($item: $W<Item$W>, itemData: Item, index: number) => void;
+export type OnItemRemoved<Item extends HasId> = (itemData: Item) => void
+export class Repeater<Item extends HasId, Comps> extends BaseElement {
+  private _data: Array<Item> = []
+  constructor(private makeItemComponents: () => Comps) {
+    super();
+  }
+
+  get data() {return this._data};
+  set data(val: Array<Item>) {
+    let orig = new Set(this._data.map(_ => _._id))
+    let update = new Set(val.map(_ => _._id))
+
+    if (this.onItemReady)
+      for (let i = 0; i < val.length; i++)
+        if (!orig.has(val[i]._id))
+          this.onItemReady(make_$w(this.makeItemComponents()), val[i], i) //todo create item $w
+
+    if (this.onItemRemoved)
+      for (let i = 0; i < this._data.length; i++)
+        if (!update.has(this._data[i]._id))
+          this.onItemRemoved(this._data[i]);
+
+    this._data = val
+  };
+
+  onItemReady: OnItemReady<Item, Comps>
+  onItemRemoved: OnItemRemoved<Item>
 }
 
 export function make_$w<T>(comps: T): $W<T> {
