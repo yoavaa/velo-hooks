@@ -3,18 +3,18 @@ import {useReactive} from "./velo-hooks";
 
 
 export interface ShowHideMixin {
-  show(effectName?: string)
-  hide(effectName?: string)
+  show(effectName?: string, options?: any)
+  hide(effectName?: string, options?: any)
   get hidden()
 
-  collapse(effectName?: string)
-  expand(effectName?: string)
+  collapse()
+  expand()
   get collapsed()
 }
 
 interface ShowHideOptions {
-  showAnimation?: string
-  hideAnimation?: string
+  showAnimation?: {effectName: string, effectOptions?: any}
+  hideAnimation?: {effectName: string, effectOptions?: any}
 }
 
 interface CollapseExpandOptions {
@@ -25,17 +25,21 @@ interface CollapseExpandOptions {
 export function bindShowHide(el: ShowHideMixin, bind: Getter<boolean>, options?: ShowHideOptions) {
   useReactive().createReaction(() => {
     if (bind())
-      el.show(options?.showAnimation?options.showAnimation:"")
+      options?.showAnimation?
+        el.show(options.showAnimation.effectName, options.showAnimation.effectOptions) :
+        el.show();
     else
-      el.hide(options?.showAnimation?options.hideAnimation:"")
+      options?.hideAnimation?
+        el.hide(options.hideAnimation.effectName, options.hideAnimation.effectOptions) :
+        el.hide();
   })
 }
 
 export function bindCollapseExpand(el: ShowHideMixin, bind: Getter<boolean>, options?: CollapseExpandOptions) {
   useReactive().createReaction(() => {
     if (bind())
-      el.expand(options?.expandAnimation?options.expandAnimation:"")
+      el.expand()
     else
-      el.collapse(options?.collapseAnimation?options.collapseAnimation:"")
+      el.collapse()
   })
 }

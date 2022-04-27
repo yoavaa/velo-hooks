@@ -28,7 +28,10 @@ describe("visibility hooks", () => {
         let textVisible = createMemo(() => state() % 3 === 0)
 
         refs.text.text = createMemo(() => `${state()}`);
-        bindShowHide(refs.text, textVisible, {showAnimation: "jump", hideAnimation: "fade"})
+        bindShowHide(refs.text, textVisible, {
+          showAnimation: {effectName: "fade", effectOptions: {duration: 2000, delay: 1000}},
+          hideAnimation: {effectName: "spin", effectOptions: {duration: 1000, delay: 200, direction: 'ccw'}}
+        })
         refs.up.onClick = () => setState(_ => _ + 1);
         refs.down.onClick = () => setState(_ => _ - 1);
       })
@@ -43,7 +46,7 @@ describe("visibility hooks", () => {
       testRefs.down.click();
       expect($w('#text').text).toBe('11')
       expect($w('#text').hidden).toBe(true)
-      expect($w('#text').allAnimations).toEqual(["show jump", 'hide fade'])
+      expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin'])
     })
 
     it('should be visible as count is 9, and does divide by 3', () => {
@@ -52,7 +55,7 @@ describe("visibility hooks", () => {
       testRefs.down.click();
       expect($w('#text').text).toBe('9')
       expect($w('#text').hidden).toBe(false)
-      expect($w('#text').allAnimations).toEqual(["show jump", 'hide fade', 'show jump'])
+      expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin', 'show fade'])
     })
   })
 
