@@ -61,6 +61,25 @@ describe("$w stab", () => {
       expect(fn.mock.calls[1][2]).toBe(1);
     })
 
+    it('given new data, call onItemReady for new items and onItemRemoved for removed items', () => {
+      let fnReady = jest.fn();
+      let fnRemoved = jest.fn();
+      $w('#items').onItemReady = fnReady;
+      $w('#items').onItemRemoved = fnRemoved;
+      $w('#items').data = [one, two];
+
+      expect(fnReady.mock.calls.length).toBe(2);
+
+      $w('#items').data = [one, three];
+
+      expect(fnReady.mock.calls.length).toBe(3);
+      expect(fnReady.mock.calls[2][1]).toBe(three);
+      expect(fnReady.mock.calls[2][2]).toBe(1);
+
+      expect(fnRemoved.mock.calls.length).toBe(1);
+      expect(fnRemoved.mock.calls[0][0]).toBe(two);
+    })
+
     it('given data, create the items $w', () => {
       $w('#items').onItemReady = ($Item, itemData, index) => {
         expect($Item('#title')).toBeDefined();
