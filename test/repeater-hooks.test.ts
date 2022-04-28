@@ -5,6 +5,7 @@ import {bindRepeater, HasId} from "../lib/repeater-hooks";
 
 const one = {_id: "1", title: "one"};
 const two = {_id: "2", title: "two"};
+const three = {_id: "3", title: "three"};
 describe("repeater", () => {
 
   interface Item extends HasId {
@@ -65,6 +66,17 @@ describe("repeater", () => {
     })
   })
 
+  it("should update a repeater", () => {
+    testRefs.repeater.data = [one, three];
+    $w('#repeater').forItems([one._id], ($item, itemData) => {
+      expect(itemData).toEqual(one)
+      expect($item("#title").text).toBe(one.title);
+    })
+    $w('#repeater').forItems([three._id], ($item, itemData) => {
+      expect(itemData).toEqual(three)
+      expect($item("#title").text).toBe(three.title);
+    })
+  })
 
 
 
