@@ -1,5 +1,6 @@
-import {$W, bind, Refs, ShowHideMixin} from '../lib'
+import {$W, bind, Refs} from "../lib/hooks-internal"
 import {ForItemCallback, HasId, OnItemReady, OnItemRemoved, RepeaterType} from "../lib/repeater-hooks";
+import {ShowHideMixin} from "../lib";
 
 export class BaseElement implements ShowHideMixin {
   private isHidden: boolean = false;

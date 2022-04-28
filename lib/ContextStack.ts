@@ -1,3 +1,5 @@
+import {Reactive} from "jay-reactive";
+
 export class ContextStack<ContextType> {
   private readonly contexts: Array<ContextType> = [];
 
@@ -15,3 +17,5 @@ export class ContextStack<ContextType> {
     return this.contexts[this.contexts.length-1];
   }
 }
+
+export const reactiveContextStack = new ContextStack<Reactive>();

@@ -1,4 +1,7 @@
-import {$W, Refs} from "./velo-hooks";
+import {$W, createState} from "./velo-hooks";
+import {Getter, Reactive} from "jay-reactive";
+import {reactiveContextStack} from "./ContextStack";
+import {makeRefs, RefComponent, Refs} from "./hooks-internal";
 
 export interface HasId {
   _id: string
@@ -18,8 +21,16 @@ export interface RepeaterType<Item extends HasId, Comps> {
 }
 
 export function bindRepeater<Item extends HasId, Comps>(
-  repeater: RepeaterType<Item, Comps>,
-  fn: (refs: Refs<Comps>) => void
+  repeater: RefComponent<RepeaterType<Item, Comps>>,
+  data: Getter<Array<Item>>,
+  fn: (refs: Refs<Comps>, item: Getter<Item>) => void
 ) {
+  reactiveContextStack.doWithContext(new Reactive(), () => {
+    repeater.onItemReady = ($item: $W<Comps>, itemData: Item, index: number) => {
+      let [item, setItem] = createState(itemData);
+      fn(makeRefs($item), item);
+    }
+  })
 
+  repeater.data = data;
 }
