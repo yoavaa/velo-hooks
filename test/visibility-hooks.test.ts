@@ -34,7 +34,7 @@ describe("visibility hooks", () => {
         })
         refs.up.onClick = () => setState(_ => _ + 1);
         refs.down.onClick = () => setState(_ => _ - 1);
-      })
+      })[0]
     })
 
     it('should be visible by default', () => {

@@ -42,11 +42,11 @@ describe("velo hooks", () => {
 
       it('should update batched properties on batch end', async () => {
         let state, setState;
-        bind($w, refs => {
+        let [, reactive] = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
-        useReactive().batchReactions(() => {
+        reactive.batchReactions(() => {
           setState('a new text')
         })
 
@@ -55,26 +55,26 @@ describe("velo hooks", () => {
 
       it('should update property async from state update not in batch', async () => {
         let state, setState;
-        bind($w, refs => {
+        let [, reactive] = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
         setState('a new text')
 
         expect($w('#text').text).toBe('some text')
-        await useReactive().toBeClean();
+        await reactive.toBeClean();
         expect($w('#text').text).toBe('a new text')
       })
 
       it('should update property from state update on flush', () => {
         let state, setState;
-        bind($w, refs => {
+        let [, reactive] = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
         setState('a new text')
         expect($w('#text').text).toBe('some text')
-        useReactive().flush();
+        reactive.flush();
         expect($w('#text').text).toBe('a new text')
       })
     })
@@ -87,7 +87,7 @@ describe("velo hooks", () => {
           refs.text.text = createMemo(() => `${state()}`);
           refs.up.onClick = () => setState(_ => _ + 1);
           refs.down.onClick = () => setState(_ => _ - 1);
-        })
+        })[0]
       })
       it('should bind memo to property', () => {
         expect($w('#text').text).toBe('12')
@@ -140,7 +140,7 @@ describe("velo hooks", () => {
         refs.decrement.onClick = () => setCounter(_ => _ - step())
         refs.counterExtraView.text = formattedCounter
         refs.box1.backgroundColor = createMemo(() => counter() % 2 === 0 ? `blue` : 'red')
-      })
+      })[0]
 
     });
 

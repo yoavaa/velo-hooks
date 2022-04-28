@@ -1,4 +1,5 @@
 import {$W, bind, Refs, ShowHideMixin} from '../lib'
+import {ForItemCallback, HasId, OnItemReady, OnItemRemoved, RepeaterType} from "../lib/repeater-hooks";
 
 export class BaseElement implements ShowHideMixin {
   private isHidden: boolean = false;
@@ -43,15 +44,7 @@ export class Box extends BaseElement {
   backgroundColor: string
 }
 
-export interface HasId {
-  _id: string
-  [key: string]: any
-}
-
-export type OnItemReady<Item extends HasId, Item$W> = ($item: $W<Item$W>, itemData: Item, index: number) => void;
-export type OnItemRemoved<Item extends HasId> = (itemData: Item) => void
-export type ForItemCallback<Item extends HasId, Item$W> = ($item: $W<Item$W>, itemData: Item, index: number) => void;
-export class Repeater<Item extends HasId, Comps> extends BaseElement {
+export class Repeater<Item extends HasId, Comps> extends BaseElement implements RepeaterType<Item, Comps> {
   private _data: Array<Item> = []
   private item$ws: Map<string, [$W<Comps>, Item, number]> = new Map();
   constructor(private makeItemComponents: () => Comps) {

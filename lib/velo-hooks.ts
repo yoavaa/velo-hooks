@@ -51,13 +51,18 @@ export function createMemo<T>(computation: (prev: T) => T, initialValue?: T): Ge
   return value
 }
 
-export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): Refs<T> {
+export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): [Refs<T>, Reactive] {
   current = current || new Reactive();
-  return useReactive().record(() => {
-    let refs1 = makeRefs($w);
-    fn(refs1);
-    return refs1;
-  })
+  try {
+    return useReactive().record(() => {
+      let refs1 = makeRefs($w);
+      fn(refs1);
+      return [refs1, current];
+    })
+  }
+  finally {
+    current = undefined;
+  }
 }
 
 function makeRefs<T>($w: $W<T>): Refs<T>  {
@@ -78,6 +83,7 @@ function makeRefs<T>($w: $W<T>): Refs<T>  {
 }
 
 function componentProxy<T extends object>(comp: T): RefComponent<T> {
+  let reactive = useReactive();
   return new Proxy(comp, {
     get: function(obj, prop) {
       let rawValue = obj[prop];
@@ -93,7 +99,7 @@ function componentProxy<T extends object>(comp: T): RefComponent<T> {
         })
       else if (value instanceof Function)
         obj[prop] = (...args) => {
-          useReactive().batchReactions(() => value(...args))
+          reactive.batchReactions(() => value(...args))
         }
       else
         obj[prop] = value

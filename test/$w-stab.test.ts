@@ -1,4 +1,4 @@
-import {describe, expect, it, jest} from '@jest/globals'
+import {describe, expect, it, jest, beforeEach} from '@jest/globals'
 import {Button, make_$w, Repeater, Text} from "./$w-stab";
 import {$W} from "../lib";
 
@@ -36,15 +36,19 @@ describe("$w stab", () => {
   })
 
   describe('repeater', () => {
-    let $w = make_$w({
-      add: new Button(),
-      items: new Repeater(() => ({
-        title: new Text(),
-        description: new Text(),
-        remove: new Button()
-      }))
+    let $w;
+    beforeEach(() => {
+      $w = make_$w({
+        add: new Button(),
+        items: new Repeater(() => ({
+          title: new Text(),
+          description: new Text(),
+          remove: new Button()
+        }))
+      })
+
     })
-    
+
     const one = {_id: "1", title: "one", description: "the one"}
     const two = {_id: "2", title: "two", description: "the second"}
     const three = {_id: "3", title: "three", description: "the best"}
