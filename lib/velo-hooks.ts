@@ -1,4 +1,5 @@
 import {Getter, GetterMark, Reactive, Setter, ValueOrGetter} from "jay-reactive";
+import {ContextStack} from "./ContextStack";
 
 export type RefComponent<C> = {
   [K in keyof C]: C[K] extends Function? C[K] : Getter<C[K]> | C[K]
@@ -17,10 +18,10 @@ export interface $W<T> {
   bind: (fn: (refs: Refs<T>) => void) => void
 }
 
-let current: Reactive;
+const reactiveContextStack = new ContextStack<Reactive>();
 
 export function useReactive(): Reactive {
-  return current;
+  return reactiveContextStack.current();
 }
 
 export function createState<T>(value: ValueOrGetter<T>): [get: Getter<T>, set: Setter<T>] {
@@ -52,17 +53,13 @@ export function createMemo<T>(computation: (prev: T) => T, initialValue?: T): Ge
 }
 
 export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): [Refs<T>, Reactive] {
-  current = current || new Reactive();
-  try {
+  return reactiveContextStack.doWithContext(new Reactive(), () => {
     return useReactive().record(() => {
       let refs1 = makeRefs($w);
       fn(refs1);
-      return [refs1, current];
+      return [refs1, useReactive()];
     })
-  }
-  finally {
-    current = undefined;
-  }
+  })
 }
 
 function makeRefs<T>($w: $W<T>): Refs<T>  {
