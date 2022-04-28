@@ -55,27 +55,22 @@ describe("repeater", () => {
     })[0]
   })
 
+  const assertRepeaterRendersItem = (item: Item) => {
+    $w('#repeater').forItems([item._id], ($item, itemData) => {
+      expect(itemData).toEqual(item)
+      expect($item("#title").text).toBe(item.title);
+    })
+  }
+
   it("should render a repeater", () => {
-    $w('#repeater').forItems([one._id], ($item, itemData) => {
-      expect(itemData).toEqual(one)
-      expect($item("#title").text).toBe(one.title);
-    })
-    $w('#repeater').forItems([two._id], ($item, itemData) => {
-      expect(itemData).toEqual(two)
-      expect($item("#title").text).toBe(two.title);
-    })
+    assertRepeaterRendersItem(one);
+    assertRepeaterRendersItem(two);
   })
 
   it("should update a repeater", () => {
     testRefs.repeater.data = [one, three];
-    $w('#repeater').forItems([one._id], ($item, itemData) => {
-      expect(itemData).toEqual(one)
-      expect($item("#title").text).toBe(one.title);
-    })
-    $w('#repeater').forItems([three._id], ($item, itemData) => {
-      expect(itemData).toEqual(three)
-      expect($item("#title").text).toBe(three.title);
-    })
+    assertRepeaterRendersItem(one);
+    assertRepeaterRendersItem(three);
   })
 
 
