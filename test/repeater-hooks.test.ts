@@ -2,10 +2,12 @@ import {beforeEach, describe, it, expect} from '@jest/globals'
 import {Button, make_$w, Repeater, Text} from "./$w-stab";
 import {$W, bind, createMemo, createState, Refs} from "../lib/hooks-internal";
 import {bindRepeater, HasId} from "../lib/repeater-hooks";
+import {Reactive} from "jay-reactive";
 
 const one = {_id: "1", title: "one"};
 const two = {_id: "2", title: "two"};
 const three = {_id: "3", title: "three"};
+const item_3 = {_id: "3", title: "item 3"};
 describe("repeater", () => {
 
   interface Item extends HasId {
@@ -26,6 +28,8 @@ describe("repeater", () => {
 
   let $w: $W<App1>
   let testRefs: Refs<App1>;
+  let testSetItems;
+  let testReactive: Reactive;
   beforeEach(() => {
     let next = 2;
     $w = make_$w({
@@ -37,14 +41,15 @@ describe("repeater", () => {
       }))
     })
 
-    testRefs = bind($w, (refs) => {
+    let [_testRefs, _reactive] = bind($w, (refs) => {
       let [items, setItems] = createState([
         one,
         two,
       ] as Item[])
+      testSetItems = setItems;
       refs.totalItems.text = createMemo(() => "" + items().length);
       refs.addNew.onClick = () => {
-        setItems([...items(), {_id: "" + next++, title: "item " + next}])
+        setItems([...items(), {_id: "" + ++next, title: "item " + next}])
       }
       bindRepeater(refs.repeater, items, (refs, item) => {
         refs.title.text = createMemo(() => item().title);
@@ -52,7 +57,10 @@ describe("repeater", () => {
           setItems(items().filter(_ => _._id !== item()._id))
         }
       })
-    })[0]
+    })
+
+    testRefs = _testRefs;
+    testReactive = _reactive;
   })
 
   const assertRepeaterRendersItem = (item: Item) => {
@@ -65,14 +73,26 @@ describe("repeater", () => {
   it("should render a repeater", () => {
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(two);
+    expect(testRefs.totalItems.text()).toBe("2");
   })
 
   it("should update a repeater", () => {
-    testRefs.repeater.data = [one, three];
+    testReactive.batchReactions(() => {
+      testSetItems([one, three]);
+    })
+    // testRefs.repeater.data = [one, three];
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(three);
+    expect(testRefs.totalItems.text()).toBe("2");
   })
 
+  it("should update a repeater from a button click", () => {
+    testRefs.addNew.click();
+    assertRepeaterRendersItem(one);
+    assertRepeaterRendersItem(two);
+    assertRepeaterRendersItem(item_3);
+    expect(testRefs.totalItems.text()).toBe("3");
+  })
 
 
 });

@@ -76,7 +76,9 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement implements 
   };
 
   forItems(itemIds: Array<string>, callback: ForItemCallback<Item, Comps>): void {
-    itemIds.forEach(id => callback(...this.item$ws.get(id)))
+    itemIds.forEach(id => callback(this.item$ws.get(id)[0],
+      this.item$ws.get(id)[1],
+      this.item$ws.get(id)[2]))
   }
 
   onItemReady: OnItemReady<Item, Comps>

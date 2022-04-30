@@ -26,10 +26,12 @@ export function bindRepeater<Item extends HasId, Comps>(
   fn: (refs: Refs<Comps>, item: Getter<Item>) => void
 ) {
   repeater.onItemReady = ($item: $W<Comps>, itemData: Item, index: number) => {
+    console.log('1')
     reactiveContextStack.doWithContext(new Reactive(), () => {
       let [item, setItem] = createState(itemData);
       fn(makeRefs($item), item);
     })
+    console.log('2')
   }
 
   repeater.data = data;
