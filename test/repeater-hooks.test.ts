@@ -94,5 +94,13 @@ describe("repeater", () => {
     expect(testRefs.totalItems.text()).toBe("3");
   })
 
+  it("should update a repeater from click on a button on a repeater item", async () => {
+    $w('#repeater').forItems([two._id], ($item) => {
+      $item('#remove').click();
+    })
+    await testReactive.toBeClean()
+    assertRepeaterRendersItem(one);
+    expect(testRefs.totalItems.text()).toBe("1");
+  })
 
 });
