@@ -2,11 +2,17 @@ import {Getter, GetterMark} from "jay-reactive";
 import {$W, createEffect, useReactive} from "./hooks-internal";
 
 export type RefComponent<C> = {
-  [K in keyof C]: C[K] extends Function? C[K] : Getter<C[K]> | C[K]
+  [K in keyof C]: C[K] extends Function? C[K] : Getter<C[K]>
 }
 
 export type Refs<T> = {
   [K in keyof T]: RefComponent<T[K]>
+}
+
+export function setValue<T>(t: T): Getter<T> {
+  let getter = () => t;
+  getter[GetterMark] = true;
+  return getter;
 }
 
 export function makeRefs<T>($w: $W<T>): Refs<T>  {

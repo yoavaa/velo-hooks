@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from '@jest/globals'
 import {Box, Button, make_$w, Text} from "./$w-stab";
-import {$W, bind, createMemo, createState, Refs, useReactive} from "../lib/hooks-internal";
+import {$W, bind, createMemo, createState, Refs, setValue, useReactive} from "../lib/hooks-internal";
 
 
 describe("velo hooks", () => {
@@ -25,7 +25,7 @@ describe("velo hooks", () => {
     describe('refs', () => {
       it('should bind properties', () => {
         bind($w, refs => {
-          refs.text.text = 'some text'
+          refs.text.text = setValue('some text');
         })
         expect($w('#text').text).toBe('some text')
       })
