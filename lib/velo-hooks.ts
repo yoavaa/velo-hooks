@@ -43,12 +43,12 @@ export function createMemo<T>(computation: (prev: T) => T, initialValue?: T): Ge
   return value
 }
 
-export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): [Refs<T>, Reactive] {
+export function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): Reactive {
   return reactiveContextStack.doWithContext(new Reactive(), () => {
     return useReactive().record(() => {
       let refs1 = makeRefs($w);
       fn(refs1);
-      return [refs1, useReactive()];
+      return useReactive();
     })
   })
 }

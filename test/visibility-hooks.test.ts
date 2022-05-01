@@ -15,7 +15,6 @@ describe("visibility hooks", () => {
     }
 
     let $w: $W<App1>
-    let testRefs: Refs<App1>;
     beforeEach(() => {
       $w = make_$w({
         up: new Button(),
@@ -23,7 +22,7 @@ describe("visibility hooks", () => {
         text: new Text()
       })
 
-      testRefs = bind($w, refs => {
+      bind($w, refs => {
         let [state, setState] = createState(12);
         let textVisible = createMemo(() => state() % 3 === 0)
 
@@ -34,7 +33,7 @@ describe("visibility hooks", () => {
         })
         refs.up.onClick = () => setState(_ => _ + 1);
         refs.down.onClick = () => setState(_ => _ - 1);
-      })[0]
+      })
     })
 
     it('should be visible by default', () => {
@@ -43,16 +42,16 @@ describe("visibility hooks", () => {
     })
 
     it('should be hidden as count is 11, and does not divide by 3', () => {
-      testRefs.down.click();
+      $w('#down').click();
       expect($w('#text').text).toBe('11')
       expect($w('#text').hidden).toBe(true)
       expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin'])
     })
 
     it('should be visible as count is 9, and does divide by 3', () => {
-      testRefs.down.click();
-      testRefs.down.click();
-      testRefs.down.click();
+      $w('#down').click();
+      $w('#down').click();
+      $w('#down').click();
       expect($w('#text').text).toBe('9')
       expect($w('#text').hidden).toBe(false)
       expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin', 'show fade'])

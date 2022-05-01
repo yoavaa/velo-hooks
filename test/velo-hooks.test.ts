@@ -42,7 +42,7 @@ describe("velo hooks", () => {
 
       it('should update batched properties on batch end', async () => {
         let state, setState;
-        let [, reactive] = bind($w, refs => {
+        let reactive = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
@@ -55,7 +55,7 @@ describe("velo hooks", () => {
 
       it('should update property async from state update not in batch', async () => {
         let state, setState;
-        let [, reactive] = bind($w, refs => {
+        let reactive = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
@@ -68,7 +68,7 @@ describe("velo hooks", () => {
 
       it('should update property from state update on flush', () => {
         let state, setState;
-        let [, reactive] = bind($w, refs => {
+        let reactive = bind($w, refs => {
           [state, setState] = createState('some text');
           refs.text.text = state;
         })
@@ -80,29 +80,28 @@ describe("velo hooks", () => {
     })
 
     describe('events, state and memo', () => {
-      let testRefs;
       beforeEach(() => {
-        testRefs = bind($w, refs => {
+        bind($w, refs => {
           let [state, setState] = createState(12);
           refs.text.text = createMemo(() => `${state()}`);
           refs.up.onClick = () => setState(_ => _ + 1);
           refs.down.onClick = () => setState(_ => _ - 1);
-        })[0]
+        })
       })
       it('should bind memo to property', () => {
         expect($w('#text').text).toBe('12')
       })
 
       it('should update prop using memo from event', () => {
-        testRefs.up.click();
+        $w('#up').click();
         expect($w('#text').text).toBe('13')
       })
 
       it('should update prop using memo from multiple event invocations', () => {
-        testRefs.up.click();
-        testRefs.up.click();
-        testRefs.up.click();
-        testRefs.down.click();
+        $w('#up').click();
+        $w('#up').click();
+        $w('#up').click();
+        $w('#down').click();
         expect($w('#text').text).toBe('14')
       })
     })
@@ -120,7 +119,6 @@ describe("velo hooks", () => {
     }
 
     let $w: $W<App2>
-    let testRefs: Refs<App2>
     beforeEach(() => {
       $w = make_$w({
         increment: new Button(),
@@ -130,7 +128,7 @@ describe("velo hooks", () => {
         box1: new Box()
       })
 
-      testRefs = bind($w, refs => {
+      bind($w, refs => {
         let [counter, setCounter] = createState(30);
         let formattedCounter = createMemo(() => `${counter()}`);
         let step = createMemo(() => Math.abs(counter()) >= 10 ? 5 : 1)
@@ -140,7 +138,7 @@ describe("velo hooks", () => {
         refs.decrement.onClick = () => setCounter(_ => _ - step())
         refs.counterExtraView.text = formattedCounter
         refs.box1.backgroundColor = createMemo(() => counter() % 2 === 0 ? `blue` : 'red')
-      })[0]
+      })
 
     });
 
@@ -151,7 +149,7 @@ describe("velo hooks", () => {
     })
 
     it('should render incremented value', () => {
-      testRefs.increment.click();
+      $w('#increment').click();
 
       expect($w('#counter').text).toBe('35');
       expect($w('#counterExtraView').text).toBe('35');
@@ -159,23 +157,23 @@ describe("velo hooks", () => {
     })
 
     it('should render decremented value 1', () => {
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('25');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('20');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('15');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('10');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('5');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('4');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('3');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('2');
-      testRefs.decrement.click();
+      $w('#decrement').click();
       expect($w('#counter').text).toBe('1');
       expect($w('#counterExtraView').text).toBe('1');
       expect($w('#box1').backgroundColor).toBe('red');

@@ -27,7 +27,6 @@ describe("repeater", () => {
   }
 
   let $w: $W<App1>
-  let testRefs: Refs<App1>;
   let testSetItems;
   let testReactive: Reactive;
   beforeEach(() => {
@@ -41,7 +40,7 @@ describe("repeater", () => {
       }))
     })
 
-    let [_testRefs, _reactive] = bind($w, (refs) => {
+    testReactive = bind($w, (refs) => {
       let [items, setItems] = createState([
         one,
         two,
@@ -58,9 +57,6 @@ describe("repeater", () => {
         }
       })
     })
-
-    testRefs = _testRefs;
-    testReactive = _reactive;
   })
 
   const assertRepeaterRendersItem = (item: Item) => {
@@ -73,7 +69,7 @@ describe("repeater", () => {
   it("should render a repeater", () => {
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(two);
-    expect(testRefs.totalItems.text()).toBe("2");
+    expect($w('#totalItems').text).toBe("2");
   })
 
   it("should update a repeater", () => {
@@ -83,15 +79,15 @@ describe("repeater", () => {
     // testRefs.repeater.data = [one, three];
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(three);
-    expect(testRefs.totalItems.text()).toBe("2");
+    expect($w('#totalItems').text).toBe("2");
   })
 
   it("should update a repeater from a button click", () => {
-    testRefs.addNew.click();
+    $w('#addNew').click();
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(two);
     assertRepeaterRendersItem(item_3);
-    expect(testRefs.totalItems.text()).toBe("3");
+    expect($w('#totalItems').text).toBe("3");
   })
 
   it("should update a repeater from click on a button on a repeater item", async () => {
@@ -100,7 +96,7 @@ describe("repeater", () => {
     })
     await testReactive.toBeClean()
     assertRepeaterRendersItem(one);
-    expect(testRefs.totalItems.text()).toBe("1");
+    expect($w('#totalItems').text).toBe("1");
   })
 
 });
