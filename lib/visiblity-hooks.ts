@@ -1,5 +1,6 @@
 import {Getter} from "jay-reactive";
 import {useReactive} from "./velo-hooks";
+import {RefComponent} from "./refs";
 
 
 export interface ShowHideMixin {
@@ -17,12 +18,7 @@ interface ShowHideOptions {
   hideAnimation?: {effectName: string, effectOptions?: any}
 }
 
-interface CollapseExpandOptions {
-  expandAnimation?: string
-  collapseAnimation?: string
-}
-
-export function bindShowHide(el: ShowHideMixin, bind: Getter<boolean>, options?: ShowHideOptions) {
+export function bindShowHide(el: RefComponent<ShowHideMixin>, bind: Getter<boolean>, options?: ShowHideOptions) {
   useReactive().createReaction(() => {
     if (bind())
       options?.showAnimation?
@@ -35,7 +31,7 @@ export function bindShowHide(el: ShowHideMixin, bind: Getter<boolean>, options?:
   })
 }
 
-export function bindCollapseExpand(el: ShowHideMixin, bind: Getter<boolean>, options?: CollapseExpandOptions) {
+export function bindCollapseExpand(el: ShowHideMixin, bind: Getter<boolean>) {
   useReactive().createReaction(() => {
     if (bind())
       el.expand()
