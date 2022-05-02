@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from '@jest/globals'
 import {Box, Button, make_$w, Text} from "./$w-stab";
-import {$W, bind, createMemo, createState, Refs, setValue, useReactive} from "../lib/hooks-internal";
+import {$W, bind, createMemo, createState, setValue} from "../lib/hooks-internal";
 
 
 describe("velo hooks", () => {
@@ -80,28 +80,31 @@ describe("velo hooks", () => {
     })
 
     describe('events, state and memo', () => {
+      let testReactive;
       beforeEach(() => {
-        bind($w, refs => {
+        testReactive = bind($w, refs => {
           let [state, setState] = createState(12);
           refs.text.text = createMemo(() => `${state()}`);
-          refs.up.onClick = () => setState(_ => _ + 1);
-          refs.down.onClick = () => setState(_ => _ - 1);
+          refs.up.onClick(() => setState(_ => _ + 1));
+          refs.down.onClick(() => setState(_ => _ - 1));
         })
       })
       it('should bind memo to property', () => {
         expect($w('#text').text).toBe('12')
       })
 
-      it('should update prop using memo from event', () => {
+      it('should update prop using memo from event', async () => {
         $w('#up').click();
+        await testReactive.toBeClean()
         expect($w('#text').text).toBe('13')
       })
 
-      it('should update prop using memo from multiple event invocations', () => {
+      it('should update prop using memo from multiple event invocations', async () => {
         $w('#up').click();
         $w('#up').click();
         $w('#up').click();
         $w('#down').click();
+        await testReactive.toBeClean()
         expect($w('#text').text).toBe('14')
       })
     })
@@ -119,6 +122,7 @@ describe("velo hooks", () => {
     }
 
     let $w: $W<App2>
+    let testReactive;
     beforeEach(() => {
       $w = make_$w({
         increment: new Button(),
@@ -128,14 +132,14 @@ describe("velo hooks", () => {
         box1: new Box()
       })
 
-      bind($w, refs => {
+      testReactive = bind($w, refs => {
         let [counter, setCounter] = createState(30);
         let formattedCounter = createMemo(() => `${counter()}`);
         let step = createMemo(() => Math.abs(counter()) >= 10 ? 5 : 1)
 
         refs.counter.text = formattedCounter;
-        refs.increment.onClick = () => setCounter(_ => _ + step())
-        refs.decrement.onClick = () => setCounter(_ => _ - step())
+        refs.increment.onClick(() => setCounter(_ => _ + step()))
+        refs.decrement.onClick(() => setCounter(_ => _ - step()))
         refs.counterExtraView.text = formattedCounter
         refs.box1.backgroundColor = createMemo(() => counter() % 2 === 0 ? `blue` : 'red')
       })
@@ -148,32 +152,41 @@ describe("velo hooks", () => {
       expect($w('#box1').backgroundColor).toBe('blue');
     })
 
-    it('should render incremented value', () => {
+    it('should render incremented value', async () => {
       $w('#increment').click();
-
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('35');
       expect($w('#counterExtraView').text).toBe('35');
       expect($w('#box1').backgroundColor).toBe('red');
     })
 
-    it('should render decremented value 1', () => {
+    it('should render decremented value 1', async () => {
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('25');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('20');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('15');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('10');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('5');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('4');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('3');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('2');
       $w('#decrement').click();
+      await testReactive.toBeClean();
       expect($w('#counter').text).toBe('1');
       expect($w('#counterExtraView').text).toBe('1');
       expect($w('#box1').backgroundColor).toBe('red');

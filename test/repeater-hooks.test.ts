@@ -47,18 +47,18 @@ describe("repeater", () => {
       let [items, setItems] = createState([one, two])
       testSetItems = setItems;
       refs.totalItems.text = createMemo(() => "" + items().length);
-      refs.addNew.onClick = () => {
+      refs.addNew.onClick(() => {
         setItems([...items(), {_id: "" + ++next, title: "item " + next}])
-      }
+      })
       testRepeaterReactives = bindRepeater(refs.repeater, items, (refs, item) => {
         refs.title.text = createMemo(() => item().title);
-        refs.input.onChange = (event) => {
+        refs.input.onChange((event) => {
           let newItems = [...items()].map(_ => (_._id === item()._id)?({...item(), title: event.value}):_);
           setItems(newItems);
-        }
-        refs.remove.onClick = () => {
+        })
+        refs.remove.onClick(() => {
           setItems(items().filter(_ => _._id !== item()._id))
-        }
+        })
       })
     })
   })
@@ -86,8 +86,9 @@ describe("repeater", () => {
     expect($w('#totalItems').text).toBe("2");
   })
 
-  it("should update a repeater from a button click", () => {
+  it("should update a repeater from a button click", async () => {
     $w('#addNew').click();
+    await testReactive.toBeClean();
     assertRepeaterRendersItem(one);
     assertRepeaterRendersItem(two);
     assertRepeaterRendersItem(item_3);

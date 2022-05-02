@@ -47,10 +47,6 @@ function componentProxy<T extends object>(comp: T): RefComponent<T> {
         createEffect(() => {
           obj[prop] = value();
         })
-      else if (value instanceof Function)
-        obj[prop] = (...args) => {
-          reactive.batchReactions(() => value(...args))
-        }
       else
         obj[prop] = value
       return true;

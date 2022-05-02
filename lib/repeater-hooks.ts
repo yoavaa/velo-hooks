@@ -16,8 +16,8 @@ export interface RepeaterType<Item extends HasId, Comps> {
   get data(): Array<Item>
   set data(val: Array<Item>)
   forItems(itemIds: Array<string>, callback: ForItemCallback<Item, Comps>): void
-  onItemReady: OnItemReady<Item, Comps>
-  onItemRemoved: OnItemRemoved<Item>
+  onItemReady(handler: OnItemReady<Item, Comps>)
+  onItemRemoved(handler: OnItemRemoved<Item>)
 }
 
 export function bindRepeater<Item extends HasId, Comps>(
@@ -26,7 +26,7 @@ export function bindRepeater<Item extends HasId, Comps>(
   fn: (refs: Refs<Comps>, item: Getter<Item>) => void
 ): () => Reactive[] {
   let itemsMap = new Map<string, [Item, Setter<Item>, Reactive]>()
-  repeater.onItemReady = ($item: $W<Comps>, itemData: Item) => {
+  repeater.onItemReady(($item: $W<Comps>, itemData: Item) => {
     reactiveContextStack.doWithContext(new Reactive(), () => {
       useReactive().record(() => {
         let [item, setItem] = createState(itemData);
@@ -34,10 +34,10 @@ export function bindRepeater<Item extends HasId, Comps>(
         fn(makeRefs($item), item);
       })
     })
-  }
-  repeater.onItemRemoved = (itemData: Item) => {
+  })
+  repeater.onItemRemoved((itemData: Item) => {
     itemsMap.delete(itemData._id);
-  }
+  })
 
   createEffect(() => {
     data().forEach(itemData => {

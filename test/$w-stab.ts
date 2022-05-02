@@ -29,10 +29,13 @@ export class BaseElement implements ShowHideMixin {
 
 export class Button extends BaseElement {
   label: string
-  onClick: (event: any) => void
+  clickHandler: (event: any) => void;
+  onClick(handler: (event: any) => void): void {
+    this.clickHandler = handler;
+  }
   click() {
-    if (this.onClick)
-      this.onClick({});
+    if (this.clickHandler)
+      this.clickHandler({});
   }
 }
 
@@ -47,10 +50,13 @@ export class Box extends BaseElement {
 
 export class Input extends BaseElement {
   change(newValue: string) {
-    if (this.onChange)
-      this.onChange({value: newValue})
+    if (this.changeHandler)
+      this.changeHandler({value: newValue})
   }
-  onChange: (event: {value: string}) => void;
+  changeHandler: (event: {value: string}) => void;
+  onChange(handler: (event: {value: string}) => void) {
+    this.changeHandler  = handler;
+  }
 }
 
 export class Repeater<Item extends HasId, Comps> extends BaseElement implements RepeaterType<Item, Comps> {
@@ -69,8 +75,8 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement implements 
       if (!orig.has(val[i]._id)) {
         let $item = make_$w(this.makeItemComponents());
         this.item$ws.set(val[i]._id, [$item, val[i], i]);
-        if (this.onItemReady)
-          this.onItemReady($item, val[i], i);
+        if (this.itemReadyHandler)
+          this.itemReadyHandler($item, val[i], i);
       }
       else {
         let [$item] = this.item$ws.get(val[i]._id);
@@ -80,8 +86,8 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement implements 
     for (let i = 0; i < this._data.length; i++)
       if (!update.has(this._data[i]._id)) {
         this.item$ws.delete(this._data[i]._id);
-        if (this.onItemRemoved)
-          this.onItemRemoved(this._data[i]);
+        if (this.itemRemovedHandler)
+          this.itemRemovedHandler(this._data[i]);
       }
 
     this._data = val
@@ -93,8 +99,14 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement implements 
       this.item$ws.get(id)[2]))
   }
 
-  onItemReady: OnItemReady<Item, Comps>
-  onItemRemoved: OnItemRemoved<Item>
+  itemReadyHandler: OnItemReady<Item, Comps>
+  onItemReady(handler: OnItemReady<Item, Comps>) {
+    this.itemReadyHandler = handler;
+  }
+  itemRemovedHandler: OnItemRemoved<Item>
+  onItemRemoved(handler: OnItemRemoved<Item>) {
+    this.itemRemovedHandler = handler;
+  }
 }
 
 export function make_$w<T>(comps: T): $W<T> {

@@ -17,6 +17,7 @@ describe("mutable state", () => {
     }
 
     let $w: $W<App1>
+    let testReactive;
     beforeEach(() => {
       $w = make_$w({
         firstName: new Text(),
@@ -27,7 +28,7 @@ describe("mutable state", () => {
         ageInput: new Input()
       })
 
-      bind($w, refs => {
+      testReactive = bind($w, refs => {
         let person = mutableObject({
           firstName: "Joe",
           lastName: "Smith",
@@ -37,9 +38,9 @@ describe("mutable state", () => {
         refs.firstName.text = createMemo(() => state().firstName);
         refs.lastName.text = createMemo(() => state().lastName);
         refs.age.text = createMemo(() => ''+ state().age);
-        refs.firstNameInput.onChange = (event => person.firstName = event.value)
-        refs.lastNameInput.onChange = (event => person.lastName = event.value)
-        refs.ageInput.onChange = (event => person.age = Number(event.value))
+        refs.firstNameInput.onChange((event => person.firstName = event.value))
+        refs.lastNameInput.onChange((event => person.lastName = event.value))
+        refs.ageInput.onChange((event => person.age = Number(event.value)))
       })
     })
 
@@ -49,15 +50,17 @@ describe("mutable state", () => {
       expect($w('#age').text).toBe('25')
     })
 
-    it('should update name', () => {
+    it('should update name', async () => {
       $w('#firstNameInput').change('John')
+      await testReactive.toBeClean();
       expect($w('#firstName').text).toBe('John')
       expect($w('#lastName').text).toBe('Smith')
       expect($w('#age').text).toBe('25')
     })
 
-    it('should update age', () => {
+    it('should update age', async () => {
       $w('#ageInput').change('30')
+      await testReactive.toBeClean();
       expect($w('#firstName').text).toBe('Joe')
       expect($w('#lastName').text).toBe('Smith')
       expect($w('#age').text).toBe('30')
@@ -87,6 +90,7 @@ describe("mutable state", () => {
 
     let $w: $W<App1>
     let reactive;
+    let itemReactives;
     beforeEach(() => {
       $w = make_$w({
         people: new Repeater(() => ({
@@ -121,13 +125,13 @@ describe("mutable state", () => {
           }
         ]);
         let [state, _] = createState(people)
-        bindRepeater(refs.people, state, (itemRefs, item) => {
+        itemReactives = bindRepeater(refs.people, state, (itemRefs, item) => {
           itemRefs.firstName.text = createMemo(() => item().firstName);
           itemRefs.lastName.text = createMemo(() => item().lastName);
           itemRefs.age.text = createMemo(() => ''+ item().age);
-          itemRefs.firstNameInput.onChange = (event => item().firstName = event.value)
-          itemRefs.lastNameInput.onChange = (event => item().lastName = event.value)
-          itemRefs.ageInput.onChange = (event => item().age = Number(event.value))
+          itemRefs.firstNameInput.onChange((event => item().firstName = event.value))
+          itemRefs.lastNameInput.onChange((event => item().lastName = event.value))
+          itemRefs.ageInput.onChange((event => item().age = Number(event.value)))
         })
       })
     })
@@ -151,6 +155,7 @@ describe("mutable state", () => {
       });
 
       await reactive.toBeClean();
+      await Promise.all((itemReactives().map(_ => _.toBeClean())));
 
       $w('#people').forItems(['b'], ($item, itemData) => {
         expect($item('#firstName').text).toBe('John')

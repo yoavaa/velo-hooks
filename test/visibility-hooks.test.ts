@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from '@jest/globals'
-import {Box, Button, make_$w, Text} from "./$w-stab";
-import {$W, bind, createMemo, createState, Refs, useReactive} from "../lib/hooks-internal";
+import {Button, make_$w, Text} from "./$w-stab";
+import {$W, bind, createMemo, createState} from "../lib/hooks-internal";
 import {bindShowHide} from "../lib/visiblity-hooks";
 
 
@@ -15,6 +15,7 @@ describe("visibility hooks", () => {
     }
 
     let $w: $W<App1>
+    let testReactive;
     beforeEach(() => {
       $w = make_$w({
         up: new Button(),
@@ -22,7 +23,7 @@ describe("visibility hooks", () => {
         text: new Text()
       })
 
-      bind($w, refs => {
+      testReactive = bind($w, refs => {
         let [state, setState] = createState(12);
         let textVisible = createMemo(() => state() % 3 === 0)
 
@@ -31,8 +32,8 @@ describe("visibility hooks", () => {
           showAnimation: {effectName: "fade", effectOptions: {duration: 2000, delay: 1000}},
           hideAnimation: {effectName: "spin", effectOptions: {duration: 1000, delay: 200, direction: 'ccw'}}
         })
-        refs.up.onClick = () => setState(_ => _ + 1);
-        refs.down.onClick = () => setState(_ => _ - 1);
+        refs.up.onClick(() => setState(_ => _ + 1));
+        refs.down.onClick(() => setState(_ => _ - 1));
       })
     })
 
@@ -41,17 +42,21 @@ describe("visibility hooks", () => {
       expect($w('#text').hidden).toBe(false)
     })
 
-    it('should be hidden as count is 11, and does not divide by 3', () => {
+    it('should be hidden as count is 11, and does not divide by 3', async () => {
       $w('#down').click();
+      await testReactive.toBeClean();
       expect($w('#text').text).toBe('11')
       expect($w('#text').hidden).toBe(true)
       expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin'])
     })
 
-    it('should be visible as count is 9, and does divide by 3', () => {
+    it('should be visible as count is 9, and does divide by 3', async () => {
       $w('#down').click();
+      await testReactive.toBeClean();
       $w('#down').click();
+      await testReactive.toBeClean();
       $w('#down').click();
+      await testReactive.toBeClean();
       expect($w('#text').text).toBe('9')
       expect($w('#text').hidden).toBe(false)
       expect($w('#text').allAnimations).toEqual(["show fade", 'hide spin', 'show fade'])

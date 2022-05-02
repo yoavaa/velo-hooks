@@ -25,7 +25,7 @@ describe("$w stab", () => {
     describe('button', () => {
       it('should call onClick on a click', () => {
         let fn = jest.fn();
-        $w('#up').onClick = fn;
+        $w('#up').onClick(fn);
         $w('#up').click();
 
         expect(fn).toHaveBeenCalled()
@@ -53,7 +53,7 @@ describe("$w stab", () => {
 
     it('given data, create the items and call onItemReady', () => {
       let fn = jest.fn();
-      $w('#items').onItemReady = fn;
+      $w('#items').onItemReady(fn);
       $w('#items').data = [one, two];
 
       expect(fn.mock.calls.length).toBe(2);
@@ -66,8 +66,8 @@ describe("$w stab", () => {
     it('given new data, call onItemReady for new items and onItemRemoved for removed items', () => {
       let fnReady = jest.fn();
       let fnRemoved = jest.fn();
-      $w('#items').onItemReady = fnReady;
-      $w('#items').onItemRemoved = fnRemoved;
+      $w('#items').onItemReady(fnReady);
+      $w('#items').onItemRemoved(fnRemoved);
       $w('#items').data = [one, two];
 
       expect(fnReady.mock.calls.length).toBe(2);
@@ -83,20 +83,20 @@ describe("$w stab", () => {
     })
 
     it('given data, create the items $w', () => {
-      $w('#items').onItemReady = ($Item, itemData, index) => {
+      $w('#items').onItemReady(($Item, itemData, index) => {
         expect($Item('#title')).toBeDefined();
         expect($Item('#description')).toBeDefined();
         expect($Item('#remove')).toBeDefined();
         expect(itemData).toBe(two);
-      };
+      });
       $w('#items').data = [two];
     })
 
     it('given data, support forItems', () => {
       let fn = jest.fn();
-      $w('#items').onItemReady = ($Item, itemData) => {
+      $w('#items').onItemReady(($Item, itemData) => {
         $Item('#title').text = itemData.title;
-      };
+      });
       $w('#items').data = [one, two];
 
       $w('#items').forItems([one._id], ($Item, itemData, index) => {
