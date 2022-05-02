@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from '@jest/globals'
-import {Box, Button, Input, make_$w, Repeater, Text} from "./$w-stab";
-import {$W, bind, createMemo, createState, Refs, setValue, useReactive} from "../lib/hooks-internal";
+import {Input, make_$w, Repeater, Text} from "./$w-stab";
+import {$W, bind, createMemo, createState} from "../lib/hooks-internal";
 import {mutableObject} from "../lib";
 import {bindRepeater} from "../lib/repeater-hooks";
 
@@ -158,19 +158,5 @@ describe("mutable state", () => {
         expect($item('#age').text).toBe('30')
       })
     })
-
-    // it('should update name', () => {
-    //   $w('#firstNameInput').change('John')
-    //   expect($w('#firstName').text).toBe('John')
-    //   expect($w('#lastName').text).toBe('Smith')
-    //   expect($w('#age').text).toBe('25')
-    // })
-    //
-    // it('should update age', () => {
-    //   $w('#ageInput').change('30')
-    //   expect($w('#firstName').text).toBe('Joe')
-    //   expect($w('#lastName').text).toBe('Smith')
-    //   expect($w('#age').text).toBe('30')
-    // })
   })
 });

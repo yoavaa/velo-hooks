@@ -26,7 +26,7 @@ export function bindRepeater<Item extends HasId, Comps>(
   fn: (refs: Refs<Comps>, item: Getter<Item>) => void
 ): () => Reactive[] {
   let itemsMap = new Map<string, [Item, Setter<Item>, Reactive]>()
-  repeater.onItemReady = ($item: $W<Comps>, itemData: Item, index: number) => {
+  repeater.onItemReady = ($item: $W<Comps>, itemData: Item) => {
     reactiveContextStack.doWithContext(new Reactive(), () => {
       useReactive().record(() => {
         let [item, setItem] = createState(itemData);

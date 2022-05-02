@@ -1,6 +1,6 @@
 import {beforeEach, describe, it, expect} from '@jest/globals'
 import {Button, Input, make_$w, Repeater, Text} from "./$w-stab";
-import {$W, bind, createMemo, createState, Refs} from "../lib/hooks-internal";
+import {$W, bind, createMemo, createState} from "../lib/hooks-internal";
 import {bindRepeater, HasId} from "../lib/repeater-hooks";
 import {Reactive} from "jay-reactive";
 
