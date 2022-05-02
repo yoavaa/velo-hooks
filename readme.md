@@ -19,9 +19,17 @@ bind($w, refs => {
 
 in the above code, `text` and `setText` are state getter and setters, which ensure on the state update, any user of the state is also updated.
                                                                                             
-**Some important differences from React**
+## Some important differences from React
 1. Unlike React, **`text` is a function** and reading the state value is a function call `text()`
 2. `refs.text1.text` is updated automatically on the text state change
+3. No need to declare hook dependencies like react - dependencies are tracked automatically
+
+## Automatic Batching
+          
+Velo-Hooks use automatic batching of reactions and updates, such that all the reactions of any state update are computed 
+in a single **async** batch. velo-hooks supports forcing **sync** calculation using the reactive `batchReactions` or `flush` APIs.
+
+## Example
 
 Let's dig into another example - a counter
 
@@ -58,7 +66,10 @@ In the above example we see the use of multiple hooks and binds
 * `createMemo` are used to create derived (or computed state). note that unlike React useEffect, we do not need to specify the dependencies
 * `createEffect` is used to print to the console any time the `tens` derives state changes.
 * `onClick` events are bound to functions who update the `counter` state 
-* `bindShowHide` is used to bind the `hidden` property, `show` and `hide` functions to a state and to animations. Alternatively, we could have used `createEffect` for the same result, if a bit more verbose code.
+* `bindShowHide` is used to bind the `hidden` property, `show` and `hide` functions to a boolean state and to animations. Alternatively, we could have used `createEffect` for the same result, if a bit more verbose code.
+* `bindbindCollapseExpand` is used to bind the `collapsed` property, `expand` and `collapse` functions to a boolean state.
+* `bindEnabled` is used to bind the `enabled` property, `enable` and `disable` functions to a boolean state.
+* `bindRepeater` is used to bind a repeater `data` property, `onItemReady` and `onItemRemoved` to state management per item
 
 * Reference
 
