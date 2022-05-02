@@ -1,5 +1,5 @@
-import {$W, createState} from "./velo-hooks";
-import {Getter, Reactive} from "jay-reactive";
+import {$W, createEffect, createState, useReactive} from "./velo-hooks";
+import {Getter, Reactive, Setter} from "jay-reactive";
 import {reactiveContextStack} from "./ContextStack";
 import {makeRefs, RefComponent, Refs} from "./hooks-internal";
 
@@ -24,13 +24,32 @@ export function bindRepeater<Item extends HasId, Comps>(
   repeater: RefComponent<RepeaterType<Item, Comps>>,
   data: Getter<Array<Item>>,
   fn: (refs: Refs<Comps>, item: Getter<Item>) => void
-) {
+): () => Reactive[] {
+  let itemsMap = new Map<string, [Item, Setter<Item>, Reactive]>()
   repeater.onItemReady = ($item: $W<Comps>, itemData: Item, index: number) => {
     reactiveContextStack.doWithContext(new Reactive(), () => {
-      let [item, setItem] = createState(itemData);
-      fn(makeRefs($item), item);
+      useReactive().record(() => {
+        let [item, setItem] = createState(itemData);
+        itemsMap.set(itemData._id, [itemData, setItem, useReactive()]);
+        fn(makeRefs($item), item);
+      })
     })
   }
+  repeater.onItemRemoved = (itemData: Item) => {
+    itemsMap.delete(itemData._id);
+  }
 
+  createEffect(() => {
+    data().forEach(itemData => {
+      if (itemsMap.has(itemData._id)) {
+        let [oldItem, setter, reactive] = itemsMap.get(itemData._id);
+        if (oldItem !== itemData) {
+          setter(itemData);
+          itemsMap.set(itemData._id, [itemData, setter, reactive]);
+        }
+      }
+    })
+  })
   repeater.data = data;
+  return () => [...itemsMap.values()].map(_ => _[2]);
 }

@@ -1,7 +1,5 @@
 import {describe, expect, it, jest, beforeEach} from '@jest/globals'
 import {Button, make_$w, Repeater, Text} from "./$w-stab";
-import {$W} from "../lib";
-
 
 describe("$w stab", () => {
   describe('regular components', () => {

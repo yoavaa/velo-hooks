@@ -1,5 +1,5 @@
 import {beforeEach, describe, it, expect} from '@jest/globals'
-import {Button, make_$w, Repeater, Text} from "./$w-stab";
+import {Button, Input, make_$w, Repeater, Text} from "./$w-stab";
 import {$W, bind, createMemo, createState, Refs} from "../lib/hooks-internal";
 import {bindRepeater, HasId} from "../lib/repeater-hooks";
 import {Reactive} from "jay-reactive";
@@ -18,6 +18,7 @@ describe("repeater", () => {
   interface Slide {
     title: Text
     remove: Button
+    input: Input
   }
 
   interface App1 {
@@ -29,6 +30,7 @@ describe("repeater", () => {
   let $w: $W<App1>
   let testSetItems;
   let testReactive: Reactive;
+  let testRepeaterReactives: () => Reactive[];
   beforeEach(() => {
     let next = 2;
     $w = make_$w({
@@ -36,22 +38,24 @@ describe("repeater", () => {
       totalItems: new Text(),
       repeater: new Repeater<Item, Slide>(() => ({
         title: new Text(),
-        remove: new Button()
+        remove: new Button(),
+        input: new Input()
       }))
     })
 
     testReactive = bind($w, (refs) => {
-      let [items, setItems] = createState([
-        one,
-        two,
-      ] as Item[])
+      let [items, setItems] = createState([one, two])
       testSetItems = setItems;
       refs.totalItems.text = createMemo(() => "" + items().length);
       refs.addNew.onClick = () => {
         setItems([...items(), {_id: "" + ++next, title: "item " + next}])
       }
-      bindRepeater(refs.repeater, items, (refs, item) => {
+      testRepeaterReactives = bindRepeater(refs.repeater, items, (refs, item) => {
         refs.title.text = createMemo(() => item().title);
+        refs.input.onChange = (event) => {
+          let newItems = [...items()].map(_ => (_._id === item()._id)?({...item(), title: event.value}):_);
+          setItems(newItems);
+        }
         refs.remove.onClick = () => {
           setItems(items().filter(_ => _._id !== item()._id))
         }
@@ -99,4 +103,14 @@ describe("repeater", () => {
     expect($w('#totalItems').text).toBe("1");
   })
 
+  it("should update a repeater from input in a repeater", async () => {
+    $w('#repeater').forItems([two._id], ($item) => {
+      $item('#input').change('new title')
+    })
+    await testReactive.toBeClean()
+    await Promise.all(testRepeaterReactives().map(_ => _.toBeClean()))
+    assertRepeaterRendersItem(one);
+    assertRepeaterRendersItem({_id: "2", title: "new title"});
+    expect($w('#totalItems').text).toBe("2");
+  })
 });

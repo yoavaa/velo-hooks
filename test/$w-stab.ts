@@ -45,6 +45,14 @@ export class Box extends BaseElement {
   backgroundColor: string
 }
 
+export class Input extends BaseElement {
+  change(newValue: string) {
+    if (this.onChange)
+      this.onChange({value: newValue})
+  }
+  onChange: (event: {value: string}) => void;
+}
+
 export class Repeater<Item extends HasId, Comps> extends BaseElement implements RepeaterType<Item, Comps> {
   private _data: Array<Item> = []
   private item$ws: Map<string, [$W<Comps>, Item, number]> = new Map();
@@ -59,10 +67,14 @@ export class Repeater<Item extends HasId, Comps> extends BaseElement implements 
 
     for (let i = 0; i < val.length; i++)
       if (!orig.has(val[i]._id)) {
-        let $w = make_$w(this.makeItemComponents());
-        this.item$ws.set(val[i]._id, [$w, val[i], i]);
+        let $item = make_$w(this.makeItemComponents());
+        this.item$ws.set(val[i]._id, [$item, val[i], i]);
         if (this.onItemReady)
-          this.onItemReady($w, val[i], i);
+          this.onItemReady($item, val[i], i);
+      }
+      else {
+        let [$item] = this.item$ws.get(val[i]._id);
+        this.item$ws.set(val[i]._id, [$item, val[i], i])
       }
 
     for (let i = 0; i < this._data.length; i++)
