@@ -23,7 +23,7 @@ export interface RepeaterType<Item extends HasId, Comps> {
 export function bindRepeater<Item extends HasId, Comps>(
   repeater: RefComponent<RepeaterType<Item, Comps>>,
   data: Getter<Array<Item>>,
-  fn: (refs: Refs<Comps>, item: Getter<Item>) => void
+  fn: (refs: Refs<Comps>, item: Getter<Item>, $item: $W<Comps>) => void
 ): () => Reactive[] {
   let itemsMap = new Map<string, [Item, Setter<Item>, Reactive]>()
   repeater.onItemReady(($item: $W<Comps>, itemData: Item) => {
@@ -31,7 +31,7 @@ export function bindRepeater<Item extends HasId, Comps>(
       useReactive().record(() => {
         let [item, setItem] = createState(itemData);
         itemsMap.set(itemData._id, [itemData, setItem, useReactive()]);
-        fn(makeRefs($item), item);
+        fn(makeRefs($item), item, $item);
       })
     })
   })
