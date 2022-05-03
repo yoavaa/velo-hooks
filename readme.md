@@ -240,7 +240,7 @@ including traversal of arrays and nested objects
 It is used as
 
 ```typescript
-// assume todoItems is an array of todo items
+// assume inputItems is an array of some items
 let items = mutableObject(inputItems);
 
 // will track this change
