@@ -31,7 +31,7 @@ export function bindShowHide(el: RefComponent<ShowHideMixin>, bind: Getter<boole
   })
 }
 
-export function bindCollapseExpand(el: ShowHideMixin, bind: Getter<boolean>) {
+export function bindCollapseExpand(el: RefComponent<ShowHideMixin>, bind: Getter<boolean>) {
   useReactive().createReaction(() => {
     if (bind())
       el.expand()

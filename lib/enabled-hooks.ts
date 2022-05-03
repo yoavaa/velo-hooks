@@ -1,5 +1,6 @@
 import {Getter} from "jay-reactive";
 import {useReactive} from "./velo-hooks";
+import {RefComponent} from "./refs";
 
 export interface EnabledMixin {
   enable()
@@ -7,7 +8,7 @@ export interface EnabledMixin {
   get enabled()
 }
 
-export function bindEnabled(el: EnabledMixin, bind: Getter<boolean>) {
+export function bindEnabled(el: RefComponent<EnabledMixin>, bind: Getter<boolean>) {
   useReactive().createReaction(() => {
     if (bind())
       el.enable()

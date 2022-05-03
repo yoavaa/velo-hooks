@@ -124,7 +124,7 @@ $w.onReady(() => {
 ```
 
 `bind` returns an instance of [Reactive - see below](#reactive).
-**Reactive is used for fine grained computation control - in most cases the usage of Reactive directly is not needed**
+**Reactive is used for fine-grained computation control - in most cases the usage of Reactive directly is not needed**
 
 ## <a name="createState">createState</a>
 
@@ -136,12 +136,8 @@ Examples of those APIs are
 import {bind, createState} from 'velo-hooks';
 
 $w.onReady(() => {
-   let reactive = bind($w, refs => {
-      // ... your hooks logic here
-
-      reactive.batchReactions
-      reactive.toBeClean
-      reactive.flush()
+   bind($w, refs => {
+     // ... state management code goes here
    })
 })
 ```
@@ -250,9 +246,16 @@ items[3].done = true;
 mutableObject is very useful for Arrays and repeaters as it allows mutating the items directly
 
 ```typescript
-let [items, setItems] = createState(mutableObject(defaultData));
-bindRepeater(refs.repeater, items, (itemRefs, item) => {
-   itemRefs.toggleButton.onClick(() => item().done = !item().done)
+import {bind, createState, bindRepeater} from 'velo-hooks';
+
+$w.onReady(() => {
+   bind($w, refs => {
+      let [items, setItems] = createState(mutableObject([one, two]));
+      bindRepeater(refs.repeater, items, (refs, item) => {
+         refs.title.text = () => item().title;
+         refs.input.onChange((event) => item().done = !item().done)
+      })
+   })
 })
 ```
 
@@ -273,6 +276,137 @@ The markings can be accessed using the symbols
 items[REVISION]
 items[CHILDRENREVISION]
 ```
+
+## <a name="bindRepeater">bindRepeater</a>
+
+Binds a repeater `data` property, creates a per item reactive for isolated hooks scope and binds the 
+`onItemReady` and `onItemRemoved`.
+                    
+Quick example - using immutable state
+       
+```typescript
+import {bind, createState, bindRepeater} from 'velo-hooks';
+
+$w.onReady(() => {
+   bind($w, refs => {
+      let [items, setItems] = createState([one, two])
+      bindRepeater(refs.repeater, items, (refs, item) => {
+         refs.title.text = () => item().title;
+         refs.input.onChange((event) => {
+            let newItems = [...items()].map(_ => (_._id === item()._id)?({...item(), title: event.target.value}):_);
+            setItems(newItems);
+         })
+      })
+   })
+})
+```
+
+The same example using mutable state
+```typescript
+import {bind, createState, bindRepeater} from 'velo-hooks';
+
+$w.onReady(() => {
+   bind($w, refs => {
+      let [items, setItems] = createState(mutableObject([one, two]));
+      bindRepeater(refs.repeater, items, (refs, item) => {
+         refs.title.text = () => item().title;
+         refs.input.onChange((event) => item().tite = event.target.value)
+      })
+   })
+})
+```
+
+
+Formally, `bindRepeater` is
+```typescript
+declare function bindRepeater<Item extends HasId, Comps>(
+  repeater: RefComponent<RepeaterType<Item, Comps>>,
+  data: Getter<Array<Item>>,
+  fn: (
+    refs: Refs<Comps>, 
+    item: Getter<Item>, 
+    $item: $W<Comps>) => void): 
+        () => Reactive[]
+```
+
+At which
+* `repeater` - is the reference to the repeater component
+* `data` - is the getter of the state holding the item to show in the repeater. Can be immutable or mutable object
+* `fn` - the state constructor for each item state management
+  * `refs` - references to the `$item` elements on the repeater item
+  * `item` - getter for the repeater item object
+  * `$item` - the underlying raw `$item`.
+* returns - a getter for `Reactive[]` of all the current items on the repeater, 
+  [Reactive - see below](#reactive).
+  **Reactive is used for fine-grained computation control - in most cases the usage of Reactive directly is not needed**
+
+
+
+## <a name="bindShowHide">bindShowHide</a>
+
+`bindShowHide` binds an element `hidden` property, the `show` and `hide` functions to a boolean state with animation support.
+When the state changes the element visibility will change as well, with the selected animations
+
+```typescript
+bind($w, refs => {
+   let [state, setState] = createState(12);
+   bindShowHide(refs.text, () => state() % 3 === 0, {
+      showAnimation: {effectName: "fade", effectOptions: {duration: 2000, delay: 1000}},
+      hideAnimation: {effectName: "spin", effectOptions: {duration: 1000, delay: 200, direction: 'ccw'}}
+   })
+   refs.up.onClick(() => setState(_ => _ + 1));
+   refs.down.onClick(() => setState(_ => _ - 1));
+})
+```
+
+Formally it is defined as 
+```typescript
+interface ShowHideOptions {
+   showAnimation?: {effectName: string, effectOptions?: ArcEffectOptions | BounceEffectOptions | FadeEffectOptions | FlipEffectOptions | FloatEffectOptions | FlyEffectOptions | FoldEffectOptions | GlideEffectOptions | PuffEffectOptions | RollEffectOptions | SlideEffectOptions | SpinEffectOptions | TurnEffectOptions | ZoomEffectOptions}
+   hideAnimation?: {effectName: string, effectOptions?: ArcEffectOptions | BounceEffectOptions | FadeEffectOptions | FlipEffectOptions | FloatEffectOptions | FlyEffectOptions | FoldEffectOptions | GlideEffectOptions | PuffEffectOptions | RollEffectOptions | SlideEffectOptions | SpinEffectOptions | TurnEffectOptions | ZoomEffectOptions}
+}
+
+declare function bindShowHide(el: RefComponent<$w.HiddenCollapsedMixin>, bind: Getter<boolean>, options?: ShowHideOptions)
+```
+
+## <a name="bindCollapseExpand">bindCollapseExpand</a>
+
+`bindCollapseExpand` binds an element `collapsed` property, the `expand` and `collapse` functions to a boolean state.
+When the state changes the element collapsed/expand will change as well.
+
+```typescript
+bind($w, refs => {
+   let [state, setState] = createState(12);
+   bindCollapseExpand(refs.text, () => state() % 3 === 0)
+   refs.up.onClick(() => setState(_ => _ + 1));
+   refs.down.onClick(() => setState(_ => _ - 1));
+})
+```
+
+Formally it is defined as
+```typescript
+declare function bindCollapseExpand(el: RefComponent<$w.HiddenCollapsedMixin>, bind: Getter<boolean>)
+```
+
+## <a name="bindEnabled">bindEnabled</a>
+
+`bindEnabled` binds an element `disabled` property, the `enable` and `disable` functions to a boolean state.
+When the state changes the element enablement will change as well.
+
+```typescript
+bind($w, refs => {
+   let [state, setState] = createState(12);
+   bindEnabled(refs.text, () => state() % 3 === 0)
+   refs.up.onClick(() => setState(_ => _ + 1));
+   refs.down.onClick(() => setState(_ => _ - 1));
+})
+```
+
+Formally it is defined as
+```typescript
+declare function bindEnabled(el: RefComponent<$w.DisabledMixin>, bind: Getter<boolean>
+```
+
 
 ## <a name="reactive">Reactive</a>
 
