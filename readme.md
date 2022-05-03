@@ -157,6 +157,8 @@ We can also bind the state to a computation, such as change in another state or 
 ```typescript
 // assuming name is a getter
 const [getState, setState] = createState(() => name());
+// or even
+const [getState2, setState2] = createState(name);
 ```
 this method removes the need to use `createEffect` just in order to update state
 
