@@ -60,14 +60,10 @@ $w.onReady(() => {
       refs.decrement.onClick(() => setCounter(_ => _ - step()))
       refs.counterExtraView.text = formattedCounter
       refs.box1.backgroundColor = () => counter() % 2 === 0 ? `blue` : 'red'
-      bindShowHide(
-              refs.counterExtraView, 
-              createMemo(() => counter() > 10),
-              {
-                 hideAnimation: {effectName: "fade", effectOptions: {duration: 2000, delay: 1000}},
-                 showAnimation: {effectName: "spin", effectOptions: {duration: 1000, delay: 200, direction: 'ccw'}}
-              }
-      )
+      bindShowHide(refs.counterExtraView, () => counter() > 10, {
+         hideAnimation: {effectName: "fade", effectOptions: {duration: 2000, delay: 1000}},
+         showAnimation: {effectName: "spin", effectOptions: {duration: 1000, delay: 200, direction: 'ccw'}}
+      })
    })
 })
 ```
@@ -103,13 +99,7 @@ In the above example we see the use of multiple hooks and binds
 ## <a name="bind">bind</a>
 
 The bind function is the entry point for initiating velo hooks. 
-Hooks can only be used within callbacks of bind. 
-
-```typescript
-declare function bind<T>($w: $W<T>, fn: (refs: Refs<T>) => void): Reactive
-```
-
-The function accepts `$w` parameter and a callback, the callback receives `refs` which is the equivalent of `$w` for hooks. 
+Hooks can only be used within callbacks of bind.
 
 The common usage of `bind` is 
 
@@ -123,7 +113,17 @@ $w.onReady(() => {
 })
 ```
 
-`bind` returns an instance of [Reactive - see below](#reactive).
+formally
+```typescript
+declare function bind<T>(
+  $w: $W<T>, 
+  fn: (refs: Refs<T>) => void
+): Reactive
+```
+* `$w` - the page `$w` to build state management on
+* `fn` - state management constructor
+  * `refs` - the the equivalent of `$w` for hooks, at which all properties are replaced from values to getter functions
+* returns - an instance of [Reactive - see below](#reactive).
 **Reactive is used for fine-grained computation control - in most cases the usage of Reactive directly is not needed**
 
 ## <a name="createState">createState</a>
@@ -132,26 +132,6 @@ Create state is inspired from [solid.js](https://www.solidjs.com/) and [S.js](ht
 which is similar and different from React in the sense of using a getter instead of a value.
 
 Examples of those APIs are 
-```typescript
-import {bind, createState} from 'velo-hooks';
-
-$w.onReady(() => {
-   bind($w, refs => {
-     // ... state management code goes here
-   })
-})
-```
-
-
-```typescript
-type Next<T> = (t: T) => T 
-type Setter<T> = (t: T | Next<T>) => T 
-type Getter<T> = () => T 
-declare function createState<T>(value: T | Getter<T>): 
-    [get: Getter<T>, set: Setter<T>];
-```
-
-and it is used as
 ```typescript
 let initialValue = 'some initial value';
 const [state, setState] = createState(initialValue);
@@ -180,18 +160,28 @@ const [getState, setState] = createState(() => name());
 ```
 this method removes the need to use `createEffect` just in order to update state
 
+formally
+
+```typescript
+type Next<T> = (t: T) => T 
+type Setter<T> = (t: T | Next<T>) => T 
+type Getter<T> = () => T 
+declare function createState<T>(
+  value: T | Getter<T>
+): [get: Getter<T>, set: Setter<T>];
+```
+* `value` - an initial value or a getter of another state to track
+* returns - 
+  * `get` - state getter
+  * `set` - state setter
+
 ## <a name="createEffect">createEffect</a>
 
-createEffect is inspired by React [useEffect](https://reactjs.org/docs/hooks-effect.html) in the sense that it is
+`createEffect` is inspired by React [useEffect](https://reactjs.org/docs/hooks-effect.html) in the sense that it is
 run any time any of the dependencies change and can return a cleanup function. Unlike React, the dependencies
 are tracked automatically like in Solid.js.
 
-```typescript
-type Clean = () => void
-declare function createEffect(effect: () => void | cleanup);
-```
-
-it can be used for computations, for instance as a timer that ticks every `props.delay()` milisecs.
+`createEffect` can be used for computations, for instance as a timer that ticks every `props.delay()` milisecs.
 
 ```typescript
 let [time, setTime] = createState(0)
@@ -203,6 +193,16 @@ createEffect(() => {
 })
 ```
 
+formally
+```typescript
+type EffectCleanup = () => void
+declare function createEffect(
+  effect: () => void | EffectCleanup
+);
+```
+* `effect` - computation to run anytime any of the states it depends on changes. 
+* `EffectCleanup` - the `effect` function can return a `EffectCleanup` function to run before any re-run of the effect 
+
 ## <a name="createMemo">createMemo</a>
 
 createMemo is inspired by Solid.js [createMemo](https://www.solidjs.com/docs/latest/api#creatememo).
@@ -211,24 +211,29 @@ For Jay Components memos are super important as they can be used directly to con
 in a very efficient way.
 
 ```typescript
-type Getter<T> = () => T
-declare function createMemo<T>(computation: (prev: T) => T, initialValue?: T);
-```
-
-```typescript
 let [time, setTime] = createState(0)
 let currentTime = createMemo(() => `The current time is ${time()}`)
 ```
+
+Formally
+
+```typescript
+type Getter<T> = () => T
+declare function createMemo<T>(
+  computation: (prev: T) => T, 
+  initialValue?: T
+): Getter<T>;
+```
+
+* `computation` - a function to rerun to compute the memo value any time any of the states it depends on change
+* `initialValue` - a value used to seed the memo
+* returns - a getter for the memo value
 
 ## <a name="mutableObject">mutableObject</a>
 
 `mutableObject` creates a Proxy over an object who tracks modifications to the underlying object,
 both for optimization of rendering and for computations. The mutable proxy handles deep objects,
 including traversal of arrays and nested objects
-
-```typescript
-declare function mutableObject<T>(obj: T): T
-```
 
 It is used as
 
@@ -258,6 +263,17 @@ $w.onReady(() => {
    })
 })
 ```
+
+Formally
+
+```typescript
+declare function mutableObject<T>(
+  obj: T
+): T
+```
+
+* `obj` - any object to track mutability for, including `object` and `array`
+* returns - a proxy that tracks mutations to the given object
 
 mutableObject tracks object immutability by marking objects who have been mutated with two revision marks
 ```typescript
@@ -366,7 +382,11 @@ interface ShowHideOptions {
    hideAnimation?: {effectName: string, effectOptions?: ArcEffectOptions | BounceEffectOptions | FadeEffectOptions | FlipEffectOptions | FloatEffectOptions | FlyEffectOptions | FoldEffectOptions | GlideEffectOptions | PuffEffectOptions | RollEffectOptions | SlideEffectOptions | SpinEffectOptions | TurnEffectOptions | ZoomEffectOptions}
 }
 
-declare function bindShowHide(el: RefComponent<$w.HiddenCollapsedMixin>, bind: Getter<boolean>, options?: ShowHideOptions)
+declare function bindShowHide(
+  el: RefComponent<$w.HiddenCollapsedMixin>, 
+  bind: Getter<boolean>, 
+  options?: ShowHideOptions
+)
 ```
 
 ## <a name="bindCollapseExpand">bindCollapseExpand</a>
@@ -385,7 +405,10 @@ bind($w, refs => {
 
 Formally it is defined as
 ```typescript
-declare function bindCollapseExpand(el: RefComponent<$w.HiddenCollapsedMixin>, bind: Getter<boolean>)
+declare function bindCollapseExpand(
+  el: RefComponent<$w.HiddenCollapsedMixin>, 
+  bind: Getter<boolean>
+)
 ```
 
 ## <a name="bindEnabled">bindEnabled</a>
@@ -404,7 +427,10 @@ bind($w, refs => {
 
 Formally it is defined as
 ```typescript
-declare function bindEnabled(el: RefComponent<$w.DisabledMixin>, bind: Getter<boolean>
+declare function bindEnabled(
+  el: RefComponent<$w.DisabledMixin>, 
+  bind: Getter<boolean>
+)
 ```
 
 
