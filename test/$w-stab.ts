@@ -1,6 +1,7 @@
 import {$W, bind, Refs} from "../lib/hooks-internal"
 import {ForItemCallback, HasId, OnItemReady, OnItemRemoved, RepeaterType} from "../lib/repeater-hooks";
 import {ShowHideMixin} from "../lib";
+import {WixStorageAPI} from "../lib/browser-storage-hooks";
 
 export class BaseElement implements ShowHideMixin {
   private isHidden: boolean = false;
@@ -122,11 +123,17 @@ export function make_$w<T>(comps: T): $W<T> {
   return $w;
 }
 
+export class LocalStorage implements WixStorageAPI {
+  data = {}
+  getItem(key: string): string {
+    return this.data[key];
+  }
 
-let $w = make_$w({
-  up: new Button(),
-  down: new Button(),
-  text: new Text()
-})
+  setItem(key: string, value: string) {
+    this.data[key] = value;
+  }
 
-$w('#up').label = '12';
+  clear() {
+    this.data = {}
+  }
+}

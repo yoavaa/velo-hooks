@@ -93,6 +93,7 @@ In the above example we see the use of multiple hooks and binds
   * [bindShowHide](#bindShowHide)
   * [bindCollapseExpand](#bindCollapseExpand)
   * [bindEnabled](#bindEnabled)
+  * [bindStorage](#bindStorage)
 * Advanced Computation Control
   * [Reactive](#Reactive)
 
@@ -434,7 +435,35 @@ declare function bindEnabled(
   bind: Getter<boolean>
 )
 ```
+           
+## <a name="bindStorage">bindStorage</a>
 
+binds a state to a one of the Wix storage engines - `local`, `memory` or `session`. 
+                    
+An example of a persistent counter - 
+
+```typescript
+import {local} from 'wix-storage';
+
+bind($w, refs => {
+  let [state, setState] = createState(12);
+  refs.text.text = () => `${state()}`;
+  refs.up.onClick(() => setState(_ => _ + 1));
+  refs.down.onClick(() => setState(_ => _ - 1));
+  bindStorage(local, 'data', state, setState)
+})
+```
+
+formally
+
+```typescript
+declare function bindStorage<T>(
+  storage: wix-storage.Storage, 
+  key: string, 
+  state: Getter<T>, 
+  setState: Setter<T>
+)
+```
 
 ## <a name="reactive">Reactive</a>
 
