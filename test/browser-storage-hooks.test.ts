@@ -2,59 +2,119 @@ import {beforeEach, describe, expect, it} from '@jest/globals'
 import {Button, LocalStorage, make_$w, Text} from "./$w-stab";
 import {$W, bind, createState} from "../lib/velo-hooks";
 import {bindStorage} from "../lib/browser-storage-hooks";
+import {mutableObject} from "jay-reactive";
 
 describe('storage hooks', () => {
 
-  interface App1 {
-    up: Button
-    down: Button
-    text: Text
-  }
+  describe('immutable state', () => {
 
-  let storage = new LocalStorage();
+    interface App1 {
+      up: Button
+      down: Button
+      text: Text
+    }
 
-  let $w: $W<App1>
-  beforeEach(() => {
-    $w = make_$w({
-      up: new Button(),
-      down: new Button(),
-      text: new Text()
+    let storage = new LocalStorage();
+
+    let $w: $W<App1>
+    beforeEach(() => {
+      $w = make_$w({
+        up: new Button(),
+        down: new Button(),
+        text: new Text()
+      })
+    })
+
+    function makeApp() {
+      return bind($w, refs => {
+        let [state, setState] = createState(12);
+        refs.text.text = () => `${state()}`;
+        refs.up.onClick(() => setState(_ => _ + 1));
+        refs.down.onClick(() => setState(_ => _ - 1));
+        bindStorage(storage, 'data', state, setState)
+      })
+    }
+
+    it('should store counter value', () => {
+      makeApp();
+      expect(storage.getItem('data')).toEqual("12")
+    })
+
+    it('should store counter updated value', async () => {
+      let testReactive = makeApp();
+      $w('#up').click();
+      await testReactive.toBeClean()
+      expect(storage.getItem('data')).toEqual("13")
+    })
+
+    it('should read initial data from store', () => {
+      storage.setItem('data', '10')
+      makeApp();
+      expect($w('#text').text).toEqual("10")
+    })
+
+    it('should read initial data from store, increment and store incremented', async () => {
+      storage.setItem('data', '10')
+      let testReactive = makeApp();
+      $w('#up').click();
+      await testReactive.toBeClean()
+      expect($w('#text').text).toEqual("11")
     })
   })
 
-  function makeApp() {
-    return bind($w, refs => {
-      let [state, setState] = createState(12);
-      refs.text.text = () => `${state()}`;
-      refs.up.onClick(() => setState(_ => _ + 1));
-      refs.down.onClick(() => setState(_ => _ - 1));
-      bindStorage(storage, 'data', state, setState)
+  describe('mutable state', () => {
+
+    interface App1 {
+      up: Button
+      down: Button
+      text: Text
+    }
+
+    let storage = new LocalStorage();
+
+    let $w: $W<App1>
+    beforeEach(() => {
+      $w = make_$w({
+        up: new Button(),
+        down: new Button(),
+        text: new Text()
+      })
     })
-  }
 
-  it('should store counter value', () => {
-    makeApp();
-    expect(storage.getItem('data')).toEqual("12")
-  })
+    function makeApp() {
+      return bind($w, refs => {
+        let [state, setState] = createState(mutableObject({counter: 12}));
+        refs.text.text = () => `${state().counter}`;
+        refs.up.onClick(() => state().counter += 1);
+        refs.down.onClick(() => state().counter -= 1);
+        bindStorage(storage, 'data', state, setState, true)
+      })
+    }
 
-  it('should store counter updated value', async () => {
-    let testReactive = makeApp();
-    $w('#up').click();
-    await testReactive.toBeClean()
-    expect(storage.getItem('data')).toEqual("13")
-  })
+    it('should store counter value', () => {
+      makeApp();
+      expect(storage.getItem('data')).toEqual("{\"counter\":12}")
+    })
 
-  it('should read initial data from store', () => {
-    storage.setItem('data', '10')
-    makeApp();
-    expect($w('#text').text).toEqual("10")
-  })
+    it('should store counter updated value', async () => {
+      let testReactive = makeApp();
+      $w('#up').click();
+      await testReactive.toBeClean()
+      expect(storage.getItem('data')).toEqual("{\"counter\":13}")
+    })
 
-  it('should read initial data from store, increment and store incremented', async () => {
-    storage.setItem('data', '10')
-    let testReactive = makeApp();
-    $w('#up').click();
-    await testReactive.toBeClean()
-    expect($w('#text').text).toEqual("11")
+    it('should read initial data from store', () => {
+      storage.setItem('data', '{\"counter\": 10}')
+      makeApp();
+      expect($w('#text').text).toEqual("10")
+    })
+
+    it('should read initial data from store, increment and store incremented', async () => {
+      storage.setItem('data', '{\"counter\": 10}')
+      let testReactive = makeApp();
+      $w('#up').click();
+      await testReactive.toBeClean()
+      expect($w('#text').text).toEqual("11")
+    })
   })
 })

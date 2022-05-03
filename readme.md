@@ -458,12 +458,19 @@ formally
 
 ```typescript
 declare function bindStorage<T>(
-  storage: wix-storage.Storage, 
-  key: string, 
-  state: Getter<T>, 
-  setState: Setter<T>
+        storage: wixStorage.Storage, 
+        key: string, 
+        state: Getter<T>, 
+        setState: Setter<T>,
+        isMutable: boolean = false        
 )
 ```
+
+* `storage` - the storage engine to use, imported from `wix-storage` API
+* `key` - the key to store the data under
+* `state` - the state getter to track and persist into the storage engine
+* `setState` - the state setter to update on first load if data exists on the storage engine
+* `isMutable` - should the read data be a `mutableObject`?
 
 ## <a name="reactive">Reactive</a>
 
