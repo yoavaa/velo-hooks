@@ -33,7 +33,6 @@ export function makeRefs<T>($w: $W<T>): Refs<T>  {
 }
 
 function componentProxy<T extends object>(comp: T): RefComponent<T> {
-  let reactive = useReactive();
   return new Proxy(comp, {
     get: function(obj, prop) {
       let rawValue = obj[prop];
@@ -43,12 +42,9 @@ function componentProxy<T extends object>(comp: T): RefComponent<T> {
         return () => rawValue;
     },
     set: function(obj, prop, value) {
-      if (value[GetterMark])
-        createEffect(() => {
-          obj[prop] = value();
-        })
-      else
-        obj[prop] = value
+      createEffect(() => {
+        obj[prop] = value();
+      })
       return true;
     }
   }) as any as RefComponent<T>;

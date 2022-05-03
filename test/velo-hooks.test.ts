@@ -77,6 +77,18 @@ describe("velo hooks", () => {
         reactive.flush();
         expect($w('#text').text).toBe('a new text')
       })
+
+      it('should update property from state update on flush', () => {
+        let state, setState;
+        let reactive = bind($w, refs => {
+          [state, setState] = createState('some text');
+          refs.text.text = () => `hello ${state()}`;
+        })
+        setState('a new text')
+        expect($w('#text').text).toBe('hello some text')
+        reactive.flush();
+        expect($w('#text').text).toBe('hello a new text')
+      })
     })
 
     describe('events, state and memo', () => {
