@@ -1,6 +1,6 @@
 {
   "name": "velo-hooks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc",
@@ -12,6 +12,10 @@
       "node_modules/(?!jay-reactive)"
     ]
   },
+  "files": [
+    "dist",
+    "lib"
+  ],
   "dependencies": {
     "jay-reactive": "^1.0.3"
   },
